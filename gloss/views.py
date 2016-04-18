@@ -1,13 +1,21 @@
 from flask import abort, current_app, request
 from . import gloss as app
 from . import db
-from models import Definition, Interaction
+from models import Sprint, RetrospectiveItem, Definition, Interaction
 from sqlalchemy import func, distinct, sql
 from re import compile, match, search, sub, UNICODE
 from requests import post
 from datetime import datetime
 import json
 import random
+
+GOOD_CMDS = (u'good',)
+BAD_CMDS = (u'bad',)
+TRY_CMDS = (u'try',)
+CATEGORY_CMDS = GOOD_CMDS + BAD_CMDS + TRY_CMDS
+RESET_CMDS = (u'reset',)
+LIST_CMDS = (u'list',)
+ALL_CMDS = CATEGORY_CMDS + RESET_CMDS + LIST_CMDS
 
 STATS_CMDS = (u'stats',)
 RECENT_CMDS = (u'learnings',)
@@ -325,6 +333,33 @@ def set_definition_and_get_response(slash_command, command_params, user_name):
 
     return u'*{}* has set the definition for *{}* to *{}*'.format(BOT_NAME, set_term, set_value), 200
 
+
+def set_retrospective_item_and_get_response(slash_command, category, text, user_name):
+    ''' Set the retrospective item for the passed parameters and return the approriate responses
+    '''
+    # reject attempts to set reserved terms
+    if text.lower() in STATS_CMDS + RECENT_CMDS + HELP_CMDS:
+        return u'Sorry, but *{}* can\'t save *{}* because it\'s a reserved term.'.format(BOT_NAME, text)
+
+    sprint_id = 0
+    category = category.lower()
+
+    # save the item in the database
+    entry = RetrospectiveItem(
+        sprint_id=sprint_id,
+        category=category,
+        text=text,
+        user_name=user_name)
+
+    try:
+        db.session.add(entry)
+        db.session.commit()
+    except Exception as e:
+        return u'Sorry, but *{}* was unable to save that retrospective item: {}, {}'.format(BOT_NAME, e.message, e.args), 200
+
+    return u'*{}* has saved the retrospective item: *{}*: *{}*'.format(BOT_NAME, category, text), 200
+
+
 #
 # ROUTES
 #
@@ -347,6 +382,26 @@ def index():
     full_text = sub(u' +', u' ', full_text)
     command_text = full_text
 
+    # The bot can be called in Slack with:
+    if slash_command in CATEGORY_CMDS:
+        # '/good Bla Bla'
+        command_action = slash_command
+        command_params = command_text
+    else:
+        # or '/retrospective good Bla Bla'
+        command_action, command_params = get_command_action_and_params(command_text)
+
+    #
+    # ADD 'GOOD'
+    #
+    if command_action in CATEGORY_CMDS:
+        category = command_action
+        text = command_text
+        return set_retrospective_item_and_get_response(slash_command, category, text, user_name)
+
+
+
+#def _old_index():
     #
     # GET definition (for a single word that can't be interpreted as a command)
     #

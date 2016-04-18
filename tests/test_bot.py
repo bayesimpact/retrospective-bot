@@ -4,7 +4,7 @@ import unittest
 import json
 from httmock import response, HTTMock
 from flask import current_app
-from gloss.models import Definition, Interaction
+from gloss.models import Sprint, RetrospectiveItem, Definition, Interaction
 from gloss.views import query_definition
 from datetime import datetime, timedelta
 from tests.test_base import TestBase
@@ -31,6 +31,16 @@ class TestBot(TestBase):
         '''
         robo_response = self.post_command(text=u'')
         self.assertEqual(robo_response.status_code, 200)
+
+    def test_set_good_retrospective_item(self):
+        ''' A definition set via a POST is recorded in the database
+        '''
+        robo_response = self.post_command(text=u'The coffee was great', slash_command=u'good')
+        self.assertTrue(u'has saved the retrospective item' in robo_response.data, robo_response.data)
+
+        filter = (RetrospectiveItem.category == 'good' and RetrospectiveItem.text == u'The coffee was great')
+        retrospective_item_check = self.db.session.query(RetrospectiveItem).filter(filter).first()
+        self.assertIsNotNone(retrospective_item_check)
 
     def test_set_definition(self):
         ''' A definition set via a POST is recorded in the database
