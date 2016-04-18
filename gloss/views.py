@@ -130,7 +130,7 @@ def get_learnings(how_many=12, sort_order=u'recent', offset=0):
     order_random = func.random()
     order_alphabetical = Definition.term
     order_function = order_descending
-    prefix_singluar = u'I recently learned the definition for'
+    prefix_singluar = u'XXXXI recently learned the definition for'
     prefix_plural = u'I recently learned definitions for'
     no_definitions_text = u'I haven\'t learned any definitions yet.'
     if sort_order == u'random':
