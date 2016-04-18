@@ -1,10 +1,15 @@
 {
-  "name": "Glossary Bot",
-  "description": "A Slack bot that maintains a glossary of terms created by its users.",
-  "repository": "https://github.com/codeforamerica/glossary-bot",
+  "name": "Retrospective Bot",
+  "description": "A Slack bot that records 'Good', 'Bad' and 'Try' things for the retrospective of the current scrum sprint.",
+  "repository": "https://github.com/bayesimpact/retrospective-bot",
   "keywords": [
     "slack",
-    "glossary",
+    "scrum",
+    "retrospective",
+    "good",
+    "bad",
+    "try",
+    "sprint"
     "bot"
   ],
   "scripts": {
