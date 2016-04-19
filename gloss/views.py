@@ -1,6 +1,7 @@
 from flask import abort, current_app, request
 from . import gloss as app
 from . import db
+from itertools import groupby
 from models import Sprint, RetrospectiveItem, Definition, Interaction
 from sqlalchemy import func, distinct, sql
 from re import compile, match, search, sub, UNICODE
@@ -333,7 +334,6 @@ def set_definition_and_get_response(slash_command, command_params, user_name):
 
     return u'*{}* has set the definition for *{}* to *{}*'.format(BOT_NAME, set_term, set_value), 200
 
-
 def set_retrospective_item_and_get_response(slash_command, category, text, user_name):
     ''' Set the retrospective item for the passed parameters and return the approriate responses
     '''
@@ -359,6 +359,19 @@ def set_retrospective_item_and_get_response(slash_command, category, text, user_
 
     return u'*{}* has saved the retrospective item: *{}*: *{}*'.format(BOT_NAME, category, text), 200
 
+def get_retrospective_items_response(slash_command, user_name):
+    ''' Get all the retrospective item for the current sprint
+    '''
+    sprint_id = 0
+    items = RetrospectiveItem.get_retrospective_items_for_sprint(sprint_id)
+    items_by_category = groupby(items, lambda i: i.category)
+
+    response = u''
+    for category, items_in_category in items_by_category:
+        response += u'{}:\n'.format(category.capitalize())
+        response += '\n'.join([item.text for item in items_in_category])
+        response += '\n\n'
+    return response
 
 #
 # ROUTES
@@ -392,12 +405,20 @@ def index():
         command_action, command_params = get_command_action_and_params(command_text)
 
     #
-    # ADD 'GOOD'
+    # ADD GOOD, BAD or TRY
     #
     if command_action in CATEGORY_CMDS:
         category = command_action
-        text = command_text
+        text = command_params
+
         return set_retrospective_item_and_get_response(slash_command, category, text, user_name)
+
+    if command_action in LIST_CMDS:
+        try:
+            return get_retrospective_items_response(slash_command, user_name)
+        except Exception as e:
+            return e.message
+
 
 
 

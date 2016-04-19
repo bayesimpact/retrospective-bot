@@ -25,7 +25,7 @@ class RetrospectiveItem(db.Model):
     __tablename__ = 'retrospective_items'
     # Columns
     id = db.Column(db.Integer, primary_key=True)
-    sprint_id = db.Column(db.Unicode(), index=True)
+    sprint_id = db.Column(db.Integer, index=True)
     category = db.Column(db.Unicode(), index=True)
     text = db.Column(db.Unicode())
     user_name = db.Column(db.Unicode())
@@ -34,6 +34,19 @@ class RetrospectiveItem(db.Model):
 
     def __repr__(self):
         return '<RetrospectiveItem: {}: {}, Sprint: {}>'.format(self.category, self.text, self.sprint_id)
+
+    @classmethod
+    def get_retrospective_items_for_sprint(cls, sprint_id):
+        ''' Return a dict of retrospective items grouped by categoty
+
+        {
+            'good': [item1, item2],
+            'bad': [item3, item4],
+            'try': [item5],
+        }
+        '''
+        items = RetrospectiveItem.query.filter(RetrospectiveItem.sprint_id == sprint_id)
+        return items
 
 
 class Definition(db.Model):
