@@ -63,12 +63,12 @@ def get_retrospective_items_response(slash_command, user_name):
     sprint = Sprint.get_current_sprint(user_name)
     items = RetrospectiveItem.get_retrospective_items_for_sprint(sprint)
     if items.count() == 0:
-        return 'No retrospective items yet for {}.'.format(sprint)
+        return 'No retrospective items yet for *{}*.'.format(sprint)
     items = sorted(items, key=lambda i: i.category)
     items_by_category = groupby(items, lambda i: i.category)
 
 
-    response = u'Retrospective items for {}:\n'.format(sprint)
+    response = u'Retrospective items for *{}*:\n'.format(sprint)
     for category, items_in_category in items_by_category:
         response += u'{}:\n'.format(category.capitalize())
         response += '\n'.join([item.text for item in items_in_category])
@@ -81,7 +81,7 @@ def start_new_sprint(slash_command, user_name):
     except Exception as e:
         return u'Sorry, but *{}* was unable to create new sprint: {}, {}.'.format(BOT_NAME, e.message, e.args)
 
-    return u'New sprint: {}.'.format(sprint)
+    return u'New sprint: *{}*.'.format(sprint)
 
 def format_json_response(response, in_channel=True):
     ''' Format response for Slack
@@ -101,7 +101,6 @@ def format_json_response(response, in_channel=True):
 
     response_json = json.dumps(response_dict)
     return Response(response_json, status=200, mimetype='application/json')
-
 
 #
 # ROUTES
@@ -161,9 +160,9 @@ def index():
     # HELP
     if command_action in HELP_CMDS or command_text == u'' or command_text == u' ':
         response = '\n'.join([
-            u'*{command} good <sentence>* to save an item in the "good" list',
-            u'*{command} bad <sentence>* to save an item in the "bad" list',
-            u'*{command} try <sentence>* to save an item in the "try" list',
+            u'*{command} good <item>* to save an item in the "good" list',
+            u'*{command} bad <item>* to save an item in the "bad" list',
+            u'*{command} try <item>* to save an item in the "try" list',
             u'*{command} list* to see the different lists saved for the current sprint',
             u'*{command} new* to start a fresh list for the new scrum sprint',
             u'*{command} help* to see this message',

@@ -76,7 +76,7 @@ class TestBot(TestBase):
         # Check list is empty at first
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
         expected_list = u'{"text": "' +\
-            u'No retrospective items yet for Sprint 1, started on {}.'.format(date) +\
+            u'No retrospective items yet for *Sprint 1, started on {}*.'.format(date) +\
             u'", "response_type": "in_channel", "attachments": []}'
         self.assertEqual(robo_response.data, expected_list)
 
@@ -87,7 +87,7 @@ class TestBot(TestBase):
         robo_response = self.post_command(text=u'The tea was great', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
         expected_list = u'{"text": "' +\
-            u'Retrospective items for Sprint 1, started on {}:\\n'.format(date) +\
+            u'Retrospective items for *Sprint 1, started on {}*:\\n'.format(date) +\
             u'Bad:\\nThe coffee was bad\\n\\nGood:\\nThe coffee was great\\nThe tea was great\\n\\nTry:\\nMake more coffee\\n\\n' +\
             u'", "response_type": "in_channel", "attachments": []}'
         self.assertEqual(robo_response.data, expected_list)
@@ -107,7 +107,7 @@ class TestBot(TestBase):
         robo_response = self.post_command(text=u'The coffee was great', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
         expected_list = u'{"text": "' +\
-            u'Retrospective items for Sprint 1, started on {}:\\n'.format(date) +\
+            u'Retrospective items for *Sprint 1, started on {}*:\\n'.format(date) +\
             u'Good:\\nThe coffee was great\\n\\n' +\
             u'", "response_type": "in_channel", "attachments": []}'
         self.assertEqual(robo_response.data, expected_list)
@@ -116,7 +116,7 @@ class TestBot(TestBase):
         robo_response = self.post_command(text=u'new', slash_command=u'retro')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
         expected_list = u'{"text": "' +\
-            u'No retrospective items yet for Sprint 2, started on {}.'.format(date) +\
+            u'No retrospective items yet for *Sprint 2, started on {}*.'.format(date) +\
             u'", "response_type": "in_channel", "attachments": []}'
         self.assertEqual(robo_response.data, expected_list)
 
@@ -124,7 +124,7 @@ class TestBot(TestBase):
         robo_response = self.post_command(text=u'The coffee was great again', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
         expected_list = u'{"text": "' +\
-            u'Retrospective items for Sprint 2, started on {}:\\n'.format(date) +\
+            u'Retrospective items for *Sprint 2, started on {}*:\\n'.format(date) +\
             u'Good:\\nThe coffee was great again\\n\\n' +\
             u'", "response_type": "in_channel", "attachments": []}'
         self.assertEqual(robo_response.data, expected_list)
