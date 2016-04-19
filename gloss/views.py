@@ -1,4 +1,4 @@
-from flask import abort, current_app, request
+from flask import abort, current_app, request, Response
 from . import gloss as app
 from . import db
 from itertools import groupby
@@ -83,7 +83,7 @@ def start_new_sprint(slash_command, user_name):
 
     return u'New sprint: {}.'.format(sprint)
 
-def format_response(response, in_channel=True):
+def format_json_response(response, in_channel=True):
     ''' Format response for Slack
     '''
     if isinstance(response, basestring):
@@ -99,7 +99,8 @@ def format_response(response, in_channel=True):
         'attachments': [{'text': attachment_text}] if attachment_text else []
     }
 
-    return json.dumps(response_dict), 200
+    response_json = json.dumps(response_dict)
+    return Response(response_json, status=200, mimetype='application/json')
 
 
 #
@@ -145,17 +146,17 @@ def index():
         category = command_action
         text = command_params
         response = add_retrospective_item_and_get_response(slash_command, category, text, user_name)
-        return format_response(response)
+        return format_json_response(response)
 
     # LIST
     if command_action in LIST_CMDS:
         response = get_retrospective_items_response(slash_command, user_name)
-        return format_response(response)
+        return format_json_response(response)
 
     # NEW SPRINT
     if command_action in NEW_CMDS:
         response = start_new_sprint(slash_command, user_name)
-        return format_response(response)
+        return format_json_response(response)
 
     # HELP
     if command_action in HELP_CMDS or command_text == u'' or command_text == u' ':
@@ -168,5 +169,5 @@ def index():
             u'*{command} help* to see this message',
         ]).format(command=slash_command)
         # Don't show help to other users in th channel
-        return format_response(response, in_channel=False)
+        return format_json_response(response, in_channel=False)
 
