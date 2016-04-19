@@ -10,7 +10,6 @@ class Sprint(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_name = db.Column(db.Unicode())
     creation_date = db.Column(db.DateTime(), default=datetime.utcnow)
-    tsv_search = db.Column(TSVECTOR)
 
     def __repr__(self):
         return '<Sprint: {}, Created: {}>'.format(self.id, self.creation_date)
@@ -30,7 +29,6 @@ class RetrospectiveItem(db.Model):
     text = db.Column(db.Unicode())
     user_name = db.Column(db.Unicode())
     creation_date = db.Column(db.DateTime(), default=datetime.utcnow)
-    tsv_search = db.Column(TSVECTOR)
 
     def __repr__(self):
         return '<RetrospectiveItem: {}: {}, Sprint: {}>'.format(self.category, self.text, self.sprint_id)
