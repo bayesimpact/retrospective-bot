@@ -62,10 +62,13 @@ def get_retrospective_items_response(slash_command, user_name):
     # TODO use real sprint
     sprint = Sprint.get_current_sprint(user_name)
     items = RetrospectiveItem.get_retrospective_items_for_sprint(sprint)
+    if items.count() == 0:
+        return 'No retrospective items yet for {}'.format(sprint), 200
     items = sorted(items, key=lambda i: i.category)
     items_by_category = groupby(items, lambda i: i.category)
 
-    response = u''
+
+    response = u'Retrospective items for {}:\n'.format(sprint)
     for category, items_in_category in items_by_category:
         response += u'{}:\n'.format(category.capitalize())
         response += '\n'.join([item.text for item in items_in_category])

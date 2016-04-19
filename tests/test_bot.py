@@ -75,7 +75,8 @@ class TestBot(TestBase):
         robo_response = self.post_command(text=u'Make more coffee', slash_command=u'try')
         robo_response = self.post_command(text=u'The tea was great', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
-        expected_list = u'Bad:\nThe coffee was bad\n\nGood:\nThe coffee was great\nThe tea was great\n\nTry:\nMake more coffee\n\n'
+        expected_list = u'Retrospective items for Sprint 1, started on 2016-04-19:\n' +\
+            u'Bad:\nThe coffee was bad\n\nGood:\nThe coffee was great\nThe tea was great\n\nTry:\nMake more coffee\n\n'
         self.assertTrue(robo_response.data == expected_list, robo_response.data)
 
     def test_help(self):
@@ -90,17 +91,22 @@ class TestBot(TestBase):
         # Test first sprint logs 'good' item correctly
         robo_response = self.post_command(text=u'The coffee was great', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
-        self.assertTrue(robo_response.data == u'Good:\nThe coffee was great\n\n', robo_response.data)
+        expected_list = u'Retrospective items for Sprint 1, started on 2016-04-19:\n' +\
+            u'Good:\nThe coffee was great\n\n'
+        self.assertTrue(robo_response.data == expected_list, robo_response.data)
 
         # Start a new sprint and check that new item is in it
         robo_response = self.post_command(text=u'new', slash_command=u'retro')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
-        self.assertTrue(robo_response.data == u'', robo_response.data)
+        expected_list = u'No retrospective items yet for Sprint 2, started on 2016-04-19'
+        self.assertTrue(robo_response.data == expected_list, robo_response.data)
 
         # Test second sprint logs another 'good' item correctly
         robo_response = self.post_command(text=u'The coffee was great again', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
-        self.assertTrue(robo_response.data == u'Good:\nThe coffee was great again\n\n', robo_response.data)
+        expected_list = u'Retrospective items for Sprint 2, started on 2016-04-19:\n' +\
+            u'Good:\nThe coffee was great again\n\n'
+        self.assertTrue(robo_response.data == expected_list, robo_response.data)
 
 if __name__ == '__main__':
     unittest.main()

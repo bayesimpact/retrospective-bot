@@ -11,7 +11,7 @@ class Sprint(db.Model):
     creation_date = db.Column(db.DateTime(), default=datetime.utcnow)
 
     def __repr__(self):
-        return '<Sprint: {}, Created: {}>'.format(self.id, self.creation_date)
+        return 'Sprint {}, started on {}'.format(self.id, self.creation_date.date())
 
     @classmethod
     def get_current_sprint(cls, user_name):
