@@ -86,10 +86,10 @@ class TestBot(TestBase):
         robo_response = self.post_command(text=u'Make more coffee', slash_command=u'try')
         robo_response = self.post_command(text=u'The tea was great', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
-        expected_list = u'{"text": "' +\
-            u'Retrospective items for *Sprint 1, started on {}*:\\n'.format(date) +\
-            u'Bad:\\nThe coffee was bad\\n\\nGood:\\nThe coffee was great\\nThe tea was great\\n\\nTry:\\nMake more coffee\\n\\n' +\
-            u'", "response_type": "in_channel", "attachments": []}'
+        expected_list = u'{{"text": "Retrospective items for *Sprint 1, started on {}*:", '.format(date) +\
+            u'"response_type": "in_channel", ' +\
+            u'"attachments": [{"text": "*Bad*:\\nThe coffee was bad\\n\\n*Good*:\\nThe coffee was great\\n' +\
+            u'The tea was great\\n\\n*Try*:\\nMake more coffee"}]}'
         self.assertEqual(robo_response.data, expected_list)
 
     def test_help(self):

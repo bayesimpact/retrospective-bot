@@ -68,12 +68,14 @@ def get_retrospective_items_response(slash_command, user_name):
     items_by_category = groupby(items, lambda i: i.category)
 
 
-    response = u'Retrospective items for *{}*:\n'.format(sprint)
-    for category, items_in_category in items_by_category:
-        response += u'{}:\n'.format(category.capitalize())
-        response += '\n'.join([item.text for item in items_in_category])
-        response += '\n\n'
-    return response
+    response = u'Retrospective items for *{}*:'.format(sprint)
+    response_attachment_by_category = [
+        u'*{}*:\n'.format(category.capitalize()) + '\n'.join([item.text for item in items_in_category])
+        for category, items_in_category in items_by_category
+    ]
+    response_attachment = '\n\n'.join(response_attachment_by_category)
+
+    return (response, response_attachment)
 
 def start_new_sprint(slash_command, user_name):
     try:
