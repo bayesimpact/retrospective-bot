@@ -2,7 +2,7 @@ from flask import abort, current_app, request
 from . import gloss as app
 from . import db
 from itertools import groupby
-from models import Sprint, RetrospectiveItem, Definition, Interaction
+from models import Sprint, RetrospectiveItem
 from sqlalchemy import func, distinct, sql
 from re import compile, match, search, sub, UNICODE
 from requests import post

@@ -1,6 +1,6 @@
 from os import environ, path
 from gloss import create_app, db
-from gloss.models import Definition, Interaction
+from gloss.models import Sprint, RetrospectiveItem
 from flask.ext.script import Manager, prompt_bool
 from flask.ext.migrate import Migrate, MigrateCommand
 
@@ -19,7 +19,7 @@ manager.add_command('db', MigrateCommand)
 
 @manager.shell
 def make_shell_context():
-    return dict(app=app, db=db, Definition=Definition, Interaction=Interaction)
+    return dict(app=app, db=db, Sprint=Sprint, RetrospectiveItem=RetrospectiveItem)
 
 @manager.command
 def runtests():
