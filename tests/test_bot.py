@@ -84,5 +84,23 @@ class TestBot(TestBase):
         robo_response = self.post_command(text=u'help', slash_command=u'retro')
         self.assertTrue('to see this message' in robo_response.data, robo_response.data)
 
+    def test_start_new_sprint(self):
+        ''' Test starting a new sprint with POST.
+        '''
+        # Test first sprint logs 'good' item correctly
+        robo_response = self.post_command(text=u'The coffee was great', slash_command=u'good')
+        robo_response = self.post_command(text=u'list', slash_command=u'retro')
+        self.assertTrue(robo_response.data == u'Good:\nThe coffee was great\n\n', robo_response.data)
+
+        # Start a new sprint and check that new item is in it
+        robo_response = self.post_command(text=u'new', slash_command=u'retro')
+        robo_response = self.post_command(text=u'list', slash_command=u'retro')
+        self.assertTrue(robo_response.data == u'', robo_response.data)
+
+        # Test second sprint logs another 'good' item correctly
+        robo_response = self.post_command(text=u'The coffee was great again', slash_command=u'good')
+        robo_response = self.post_command(text=u'list', slash_command=u'retro')
+        self.assertTrue(robo_response.data == u'Good:\nThe coffee was great again\n\n', robo_response.data)
+
 if __name__ == '__main__':
     unittest.main()

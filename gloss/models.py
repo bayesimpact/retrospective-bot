@@ -1,5 +1,4 @@
 from . import db
-from sqlalchemy.dialects.postgresql import TSVECTOR
 from datetime import datetime
 
 class Sprint(db.Model):
@@ -13,6 +12,23 @@ class Sprint(db.Model):
 
     def __repr__(self):
         return '<Sprint: {}, Created: {}>'.format(self.id, self.creation_date)
+
+    @classmethod
+    def get_current_sprint(cls, user_name):
+        ''' Return lasted sprint.
+        '''
+        sprint = Sprint.query.order_by(Sprint.id.desc()).first()
+        if not sprint:
+            # If no sprint has been started yet, we create one
+            sprint = cls.create_new_sprint(user_name)
+        return sprint
+
+    @classmethod
+    def create_new_sprint(cls, user_name):
+        sprint = Sprint(user_name=user_name)
+        db.session.add(sprint)
+        db.session.commit()
+        return sprint
 
 class RetrospectiveItem(db.Model):
     ''' Item logged for a sprint.
@@ -34,7 +50,7 @@ class RetrospectiveItem(db.Model):
         return '<RetrospectiveItem: {}: {}, Sprint: {}>'.format(self.category, self.text, self.sprint_id)
 
     @classmethod
-    def get_retrospective_items_for_sprint(cls, sprint_id):
+    def get_retrospective_items_for_sprint(cls, sprint):
         ''' Return a dict of retrospective items grouped by categoty
 
         {
@@ -43,5 +59,5 @@ class RetrospectiveItem(db.Model):
             'try': [item5],
         }
         '''
-        items = RetrospectiveItem.query.filter(RetrospectiveItem.sprint_id == sprint_id)
+        items = RetrospectiveItem.query.filter(RetrospectiveItem.sprint_id == sprint.id)
         return items

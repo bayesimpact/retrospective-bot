@@ -30,7 +30,7 @@ def get_command_action_and_params(command_text):
     command_params = u' '.join(command_components[1:])
     return command_action, command_params
 
-def set_retrospective_item_and_get_response(slash_command, category, text, user_name):
+def add_retrospective_item_and_get_response(slash_command, category, text, user_name):
     ''' Set the retrospective item for the passed parameters and return the approriate responses
     '''
     # reject attempts to set reserved terms
@@ -38,12 +38,12 @@ def set_retrospective_item_and_get_response(slash_command, category, text, user_
         return u'Sorry, but *{}* can\'t save *{}* because it\'s a reserved term.'.format(BOT_NAME, text)
 
    # TODO use real sprint
-    sprint_id = 0
+    sprint = Sprint.get_current_sprint(user_name)
     category = category.lower()
 
     # save the item in the database
     entry = RetrospectiveItem(
-        sprint_id=sprint_id,
+        sprint_id=sprint.id,
         category=category,
         text=text,
         user_name=user_name)
@@ -60,8 +60,8 @@ def get_retrospective_items_response(slash_command, user_name):
     ''' Get all the retrospective item for the current sprint
     '''
     # TODO use real sprint
-    sprint_id = 0
-    items = RetrospectiveItem.get_retrospective_items_for_sprint(sprint_id)
+    sprint = Sprint.get_current_sprint(user_name)
+    items = RetrospectiveItem.get_retrospective_items_for_sprint(sprint)
     items = sorted(items, key=lambda i: i.category)
     items_by_category = groupby(items, lambda i: i.category)
 
@@ -71,6 +71,14 @@ def get_retrospective_items_response(slash_command, user_name):
         response += '\n'.join([item.text for item in items_in_category])
         response += '\n\n'
     return response
+
+def start_new_sprint(slash_command, user_name):
+    try:
+        sprint = Sprint.create_new_sprint(user_name)
+    except Exception as e:
+        return u'Sorry, but *{}* was unable to create new sprint: {}, {}'.format(BOT_NAME, e.message, e.args), 200
+
+    return u'*Sprint {}* has been started!'.format(sprint.id), 200
 
 #
 # ROUTES
@@ -103,26 +111,25 @@ def index():
             # or '/retrospective good Bla Bla'
             command_action, command_params = get_command_action_and_params(command_text)
 
+        # If the command does not exist, show help
         if command_action not in ALL_CMDS:
             command_action = HELP_CMDS[0]
 
-        #
         # ADD GOOD, BAD or TRY
-        #
         if command_action in CATEGORY_CMDS:
             category = command_action
             text = command_params
-            return set_retrospective_item_and_get_response(slash_command, category, text, user_name)
+            return add_retrospective_item_and_get_response(slash_command, category, text, user_name)
 
-        #
         # LIST
-        #
         if command_action in LIST_CMDS:
             return get_retrospective_items_response(slash_command, user_name)
 
-        #
+        # NEW SPRINT
+        if command_action in NEW_CMDS:
+            return start_new_sprint(slash_command, user_name)
+
         # HELP
-        #
         if command_action in HELP_CMDS or command_text == u'' or command_text == u' ':
             return '\n'.join([
                 u'*{command} good <sentence>* to save an item in the "good" list',
