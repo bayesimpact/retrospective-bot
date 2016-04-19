@@ -58,7 +58,7 @@ class TestBot(TestBase):
             robo_response = self.post_command(text=text, slash_command=category)
         else:
             # '/retrospective good Bla bla'
-            robo_response = self.post_command(text=u'{} {}'.format(category, text), slash_command=u'retrospective')
+            robo_response = self.post_command(text=u'{} {}'.format(category, text), slash_command=u'retro')
         self.assertTrue(u'has saved the retrospective item' in robo_response.data, robo_response.data)
 
         filters = (RetrospectiveItem.category == category, RetrospectiveItem.text == text)
@@ -74,9 +74,15 @@ class TestBot(TestBase):
         robo_response = self.post_command(text=u'The coffee was bad', slash_command=u'bad')
         robo_response = self.post_command(text=u'Make more coffee', slash_command=u'try')
         robo_response = self.post_command(text=u'The tea was great', slash_command=u'good')
-        robo_response = self.post_command(text=u'list', slash_command=u'retrospective')
+        robo_response = self.post_command(text=u'list', slash_command=u'retro')
         expected_list = u'Bad:\nThe coffee was bad\n\nGood:\nThe coffee was great\nThe tea was great\n\nTry:\nMake more coffee\n\n'
         self.assertTrue(robo_response.data == expected_list, robo_response.data)
+
+    def test_help(self):
+        ''' Test getting the help for the command.
+        '''
+        robo_response = self.post_command(text=u'help', slash_command=u'retro')
+        self.assertTrue('to see this message' in robo_response.data, robo_response.data)
 
 if __name__ == '__main__':
     unittest.main()

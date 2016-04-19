@@ -37,6 +37,7 @@ def set_retrospective_item_and_get_response(slash_command, category, text, user_
     if text.lower() in ALL_CMDS:
         return u'Sorry, but *{}* can\'t save *{}* because it\'s a reserved term.'.format(BOT_NAME, text)
 
+   # TODO use real sprint
     sprint_id = 0
     category = category.lower()
 
@@ -58,6 +59,7 @@ def set_retrospective_item_and_get_response(slash_command, category, text, user_
 def get_retrospective_items_response(slash_command, user_name):
     ''' Get all the retrospective item for the current sprint
     '''
+    # TODO use real sprint
     sprint_id = 0
     items = RetrospectiveItem.get_retrospective_items_for_sprint(sprint_id)
     items = sorted(items, key=lambda i: i.category)
@@ -129,7 +131,7 @@ def index():
                 u'*{command} list* to see the different lists saved for the current sprint',
                 u'*{command} new* to start a fresh list for the new scrum sprint',
                 u'*{command} help* to see this message',
-            ])
+            ]).format(command=slash_command)
     except Exception as e:
         return e.message
 
