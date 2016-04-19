@@ -47,7 +47,7 @@ class RetrospectiveItem(db.Model):
     creation_date = db.Column(db.DateTime(), default=datetime.utcnow)
 
     def __repr__(self):
-        return '<RetrospectiveItem: {}: {}, Sprint: {}>'.format(self.category, self.text, self.sprint_id)
+        return '{}: {}'.format(self.category.capitalize(), self.text)
 
     @classmethod
     def get_retrospective_items_for_sprint(cls, sprint):

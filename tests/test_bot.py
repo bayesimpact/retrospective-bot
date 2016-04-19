@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
+import datetime
 import unittest
 import json
 from httmock import response, HTTMock
@@ -59,7 +60,7 @@ class TestBot(TestBase):
         else:
             # '/retrospective good Bla bla'
             robo_response = self.post_command(text=u'{} {}'.format(category, text), slash_command=u'retro')
-        self.assertTrue(u'has saved the retrospective item' in robo_response.data, robo_response.data)
+        self.assertTrue(u'*{}: {}* successfully saved'.format(category.capitalize(), text) in robo_response.data, robo_response.data)
 
         filters = (RetrospectiveItem.category == category, RetrospectiveItem.text == text)
         retrospective_item_check = self.db.session.query(RetrospectiveItem).filter(*filters).first()
@@ -70,12 +71,17 @@ class TestBot(TestBase):
     def test_list(self):
         ''' Test getting the list of all items with POST.
         '''
+        date = datetime.now().date()
+        robo_response = self.post_command(text=u'list', slash_command=u'retro')
+        expected_list = u'No retrospective items yet for Sprint 1, started on {}'.format(date)
+        self.assertTrue(robo_response.data == expected_list, robo_response.data)
+
         robo_response = self.post_command(text=u'The coffee was great', slash_command=u'good')
         robo_response = self.post_command(text=u'The coffee was bad', slash_command=u'bad')
         robo_response = self.post_command(text=u'Make more coffee', slash_command=u'try')
         robo_response = self.post_command(text=u'The tea was great', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
-        expected_list = u'Retrospective items for Sprint 1, started on 2016-04-19:\n' +\
+        expected_list = u'Retrospective items for Sprint 1, started on {}:\n'.format(date) +\
             u'Bad:\nThe coffee was bad\n\nGood:\nThe coffee was great\nThe tea was great\n\nTry:\nMake more coffee\n\n'
         self.assertTrue(robo_response.data == expected_list, robo_response.data)
 
@@ -89,22 +95,25 @@ class TestBot(TestBase):
         ''' Test starting a new sprint with POST.
         '''
         # Test first sprint logs 'good' item correctly
+        # TODO: Make test not flaky, in the case the test run just around midnight, and the sprint date
+        # created in the database is a day after the date calculated here
+        date = datetime.now().date()
         robo_response = self.post_command(text=u'The coffee was great', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
-        expected_list = u'Retrospective items for Sprint 1, started on 2016-04-19:\n' +\
+        expected_list = u'Retrospective items for Sprint 1, started on {}:\n'.format(date) +\
             u'Good:\nThe coffee was great\n\n'
         self.assertTrue(robo_response.data == expected_list, robo_response.data)
 
         # Start a new sprint and check that new item is in it
         robo_response = self.post_command(text=u'new', slash_command=u'retro')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
-        expected_list = u'No retrospective items yet for Sprint 2, started on 2016-04-19'
+        expected_list = u'No retrospective items yet for Sprint 2, started on {}'.format(date)
         self.assertTrue(robo_response.data == expected_list, robo_response.data)
 
         # Test second sprint logs another 'good' item correctly
         robo_response = self.post_command(text=u'The coffee was great again', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
-        expected_list = u'Retrospective items for Sprint 2, started on 2016-04-19:\n' +\
+        expected_list = u'Retrospective items for Sprint 2, started on {}:\n'.format(date) +\
             u'Good:\nThe coffee was great again\n\n'
         self.assertTrue(robo_response.data == expected_list, robo_response.data)
 

@@ -42,19 +42,19 @@ def add_retrospective_item_and_get_response(slash_command, category, text, user_
     category = category.lower()
 
     # save the item in the database
-    entry = RetrospectiveItem(
+    retrospective = RetrospectiveItem(
         sprint_id=sprint.id,
         category=category,
         text=text,
         user_name=user_name)
 
     try:
-        db.session.add(entry)
+        db.session.add(retrospective)
         db.session.commit()
     except Exception as e:
         return u'Sorry, but *{}* was unable to save that retrospective item: {}, {}'.format(BOT_NAME, e.message, e.args), 200
 
-    return u'*{}* has saved the retrospective item: *{}*: *{}*'.format(BOT_NAME, category, text), 200
+    return u'*{}* successfully saved for *{}*'.format(retrospective, sprint), 200
 
 def get_retrospective_items_response(slash_command, user_name):
     ''' Get all the retrospective item for the current sprint
@@ -81,7 +81,7 @@ def start_new_sprint(slash_command, user_name):
     except Exception as e:
         return u'Sorry, but *{}* was unable to create new sprint: {}, {}'.format(BOT_NAME, e.message, e.args), 200
 
-    return u'*Sprint {}* has been started!'.format(sprint.id), 200
+    return u'New sprint: {}'.format(sprint), 200
 
 #
 # ROUTES
