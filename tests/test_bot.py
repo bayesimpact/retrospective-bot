@@ -5,7 +5,6 @@ import json
 from httmock import response, HTTMock
 from flask import current_app
 from gloss.models import Sprint, RetrospectiveItem, Definition, Interaction
-from gloss.views import query_definition
 from datetime import datetime, timedelta
 from tests.test_base import TestBase
 
@@ -76,7 +75,7 @@ class TestBot(TestBase):
         robo_response = self.post_command(text=u'Make more coffee', slash_command=u'try')
         robo_response = self.post_command(text=u'The tea was great', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retrospective')
-        expected_list = u'Good:\nThe coffee was great\nThe tea was great\n\nBad:\nThe coffee was bad\n\nTry:\nMake more coffee\n\n'
+        expected_list = u'Bad:\nThe coffee was bad\n\nGood:\nThe coffee was great\nThe tea was great\n\nTry:\nMake more coffee\n\n'
         self.assertTrue(robo_response.data == expected_list, robo_response.data)
 
 if __name__ == '__main__':
