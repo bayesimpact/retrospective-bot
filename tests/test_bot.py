@@ -71,51 +71,68 @@ class TestBot(TestBase):
     def test_list(self):
         ''' Test getting the list of all items with POST.
         '''
-        date = datetime.now().date()
-        robo_response = self.post_command(text=u'list', slash_command=u'retro')
-        expected_list = u'No retrospective items yet for Sprint 1, started on {}'.format(date)
-        self.assertTrue(robo_response.data == expected_list, robo_response.data)
+        date = self._get_sprint_date()
 
+        # Check list is empty at first
+        robo_response = self.post_command(text=u'list', slash_command=u'retro')
+        expected_list = u'{"text": "' +\
+            u'No retrospective items yet for Sprint 1, started on {}.'.format(date) +\
+            u'", "response_type": "in_channel", "attachments": []}'
+        self.assertEqual(robo_response.data, expected_list)
+
+        # Check list is filled later
         robo_response = self.post_command(text=u'The coffee was great', slash_command=u'good')
         robo_response = self.post_command(text=u'The coffee was bad', slash_command=u'bad')
         robo_response = self.post_command(text=u'Make more coffee', slash_command=u'try')
         robo_response = self.post_command(text=u'The tea was great', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
-        expected_list = u'Retrospective items for Sprint 1, started on {}:\n'.format(date) +\
-            u'Bad:\nThe coffee was bad\n\nGood:\nThe coffee was great\nThe tea was great\n\nTry:\nMake more coffee\n\n'
-        self.assertTrue(robo_response.data == expected_list, robo_response.data)
+        expected_list = u'{"text": "' +\
+            u'Retrospective items for Sprint 1, started on {}:\\n'.format(date) +\
+            u'Bad:\\nThe coffee was bad\\n\\nGood:\\nThe coffee was great\\nThe tea was great\\n\\nTry:\\nMake more coffee\\n\\n' +\
+            u'", "response_type": "in_channel", "attachments": []}'
+        self.assertEqual(robo_response.data, expected_list)
 
     def test_help(self):
         ''' Test getting the help for the command.
         '''
         robo_response = self.post_command(text=u'help', slash_command=u'retro')
-        self.assertTrue('to see this message' in robo_response.data, robo_response.data)
+        self.assertTrue('to see this message' in robo_response.data)
 
     def test_start_new_sprint(self):
         ''' Test starting a new sprint with POST.
         '''
+        date = self._get_sprint_date()
+
         # Test first sprint logs 'good' item correctly
-        # TODO: Make test not flaky, in the case the test run just around midnight, and the sprint date
-        # created in the database is a day after the date calculated here
-        date = datetime.now().date()
         robo_response = self.post_command(text=u'The coffee was great', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
-        expected_list = u'Retrospective items for Sprint 1, started on {}:\n'.format(date) +\
-            u'Good:\nThe coffee was great\n\n'
-        self.assertTrue(robo_response.data == expected_list, robo_response.data)
+        expected_list = u'{"text": "' +\
+            u'Retrospective items for Sprint 1, started on {}:\\n'.format(date) +\
+            u'Good:\\nThe coffee was great\\n\\n' +\
+            u'", "response_type": "in_channel", "attachments": []}'
+        self.assertEqual(robo_response.data, expected_list)
 
         # Start a new sprint and check that new item is in it
         robo_response = self.post_command(text=u'new', slash_command=u'retro')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
-        expected_list = u'No retrospective items yet for Sprint 2, started on {}'.format(date)
-        self.assertTrue(robo_response.data == expected_list, robo_response.data)
+        expected_list = u'{"text": "' +\
+            u'No retrospective items yet for Sprint 2, started on {}.'.format(date) +\
+            u'", "response_type": "in_channel", "attachments": []}'
+        self.assertEqual(robo_response.data, expected_list)
 
         # Test second sprint logs another 'good' item correctly
         robo_response = self.post_command(text=u'The coffee was great again', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
-        expected_list = u'Retrospective items for Sprint 2, started on {}:\n'.format(date) +\
-            u'Good:\nThe coffee was great again\n\n'
-        self.assertTrue(robo_response.data == expected_list, robo_response.data)
+        expected_list = u'{"text": "' +\
+            u'Retrospective items for Sprint 2, started on {}:\\n'.format(date) +\
+            u'Good:\\nThe coffee was great again\\n\\n' +\
+            u'", "response_type": "in_channel", "attachments": []}'
+        self.assertEqual(robo_response.data, expected_list)
+
+    def _get_sprint_date(self):
+        sprint = Sprint.get_current_sprint(u'test_user')
+        date = sprint.creation_date.date()
+        return date
 
 if __name__ == '__main__':
     unittest.main()

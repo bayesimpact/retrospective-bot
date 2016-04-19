@@ -52,9 +52,9 @@ def add_retrospective_item_and_get_response(slash_command, category, text, user_
         db.session.add(retrospective)
         db.session.commit()
     except Exception as e:
-        return u'Sorry, but *{}* was unable to save that retrospective item: {}, {}'.format(BOT_NAME, e.message, e.args), 200
+        return u'Sorry, but *{}* was unable to save that retrospective item: {}, {}.'.format(BOT_NAME, e.message, e.args)
 
-    return u'*{}* successfully saved for *{}*'.format(retrospective, sprint), 200
+    return u'*{}* successfully saved for *{}*.'.format(retrospective, sprint)
 
 def get_retrospective_items_response(slash_command, user_name):
     ''' Get all the retrospective item for the current sprint
@@ -63,7 +63,7 @@ def get_retrospective_items_response(slash_command, user_name):
     sprint = Sprint.get_current_sprint(user_name)
     items = RetrospectiveItem.get_retrospective_items_for_sprint(sprint)
     if items.count() == 0:
-        return 'No retrospective items yet for {}'.format(sprint), 200
+        return 'No retrospective items yet for {}.'.format(sprint)
     items = sorted(items, key=lambda i: i.category)
     items_by_category = groupby(items, lambda i: i.category)
 
@@ -79,9 +79,28 @@ def start_new_sprint(slash_command, user_name):
     try:
         sprint = Sprint.create_new_sprint(user_name)
     except Exception as e:
-        return u'Sorry, but *{}* was unable to create new sprint: {}, {}'.format(BOT_NAME, e.message, e.args), 200
+        return u'Sorry, but *{}* was unable to create new sprint: {}, {}.'.format(BOT_NAME, e.message, e.args)
 
-    return u'New sprint: {}'.format(sprint), 200
+    return u'New sprint: {}.'.format(sprint)
+
+def format_response(response, in_channel=True):
+    ''' Format response for Slack
+    '''
+    if isinstance(response, basestring):
+        text = response
+        attachment_text = None
+    else:
+        text = response[0]
+        attachment_text = response[1]
+
+    response_dict = {
+        'response_type': 'in_channel' if in_channel else 'ephemeral',
+        'text': text,
+        'attachments': [{'text': attachment_text}] if attachment_text else []
+    }
+
+    return json.dumps(response_dict), 200
+
 
 #
 # ROUTES
@@ -104,44 +123,50 @@ def index():
     full_text = unicode(request.form['text'].strip())
     full_text = sub(u' +', u' ', full_text)
     command_text = full_text
-    try:
-        # The bot can be called in Slack with:
-        if slash_command in CATEGORY_CMDS:
-            # '/good Bla Bla'
-            command_action = slash_command
-            command_params = command_text
-        else:
-            # or '/retrospective good Bla Bla'
-            command_action, command_params = get_command_action_and_params(command_text)
 
-        # If the command does not exist, show help
-        if command_action not in ALL_CMDS:
-            command_action = HELP_CMDS[0]
+    # The bot can be called in Slack with:
+    if slash_command in CATEGORY_CMDS:
+        # '/good Bla Bla'
+        command_action = slash_command
+        command_params = command_text
+    else:
+        # or '/retrospective good Bla Bla'
+        command_action, command_params = get_command_action_and_params(command_text)
 
-        # ADD GOOD, BAD or TRY
-        if command_action in CATEGORY_CMDS:
-            category = command_action
-            text = command_params
-            return add_retrospective_item_and_get_response(slash_command, category, text, user_name)
+    # If the command does not exist, show help
+    if command_action not in ALL_CMDS:
+        command_action = HELP_CMDS[0]
 
-        # LIST
-        if command_action in LIST_CMDS:
-            return get_retrospective_items_response(slash_command, user_name)
 
-        # NEW SPRINT
-        if command_action in NEW_CMDS:
-            return start_new_sprint(slash_command, user_name)
+    # Call different actions:
 
-        # HELP
-        if command_action in HELP_CMDS or command_text == u'' or command_text == u' ':
-            return '\n'.join([
-                u'*{command} good <sentence>* to save an item in the "good" list',
-                u'*{command} bad <sentence>* to save an item in the "bad" list',
-                u'*{command} try <sentence>* to save an item in the "try" list',
-                u'*{command} list* to see the different lists saved for the current sprint',
-                u'*{command} new* to start a fresh list for the new scrum sprint',
-                u'*{command} help* to see this message',
-            ]).format(command=slash_command)
-    except Exception as e:
-        return e.message
+    # ADD GOOD, BAD or TRY
+    if command_action in CATEGORY_CMDS:
+        category = command_action
+        text = command_params
+        response = add_retrospective_item_and_get_response(slash_command, category, text, user_name)
+        return format_response(response)
+
+    # LIST
+    if command_action in LIST_CMDS:
+        response = get_retrospective_items_response(slash_command, user_name)
+        return format_response(response)
+
+    # NEW SPRINT
+    if command_action in NEW_CMDS:
+        response = start_new_sprint(slash_command, user_name)
+        return format_response(response)
+
+    # HELP
+    if command_action in HELP_CMDS or command_text == u'' or command_text == u' ':
+        response = '\n'.join([
+            u'*{command} good <sentence>* to save an item in the "good" list',
+            u'*{command} bad <sentence>* to save an item in the "bad" list',
+            u'*{command} try <sentence>* to save an item in the "try" list',
+            u'*{command} list* to see the different lists saved for the current sprint',
+            u'*{command} new* to start a fresh list for the new scrum sprint',
+            u'*{command} help* to see this message',
+        ]).format(command=slash_command)
+        # Don't show help to other users in th channel
+        return format_response(response, in_channel=False)
 
