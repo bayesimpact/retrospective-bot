@@ -134,8 +134,8 @@ class TestBot(TestBase):
             u'{"color": "good", "text": "The coffee was great again", "title": "Good"}]}'
         self.assertEqual(robo_response.data, expected_list)
 
-    def test_reset_all(self):
-        ''' Test deleting all sprints and retrospective items with POST.
+    def test_reset_current_sprint(self):
+        ''' Test deleting all retrospective items in the current sprint with POST.
         '''
         # Test first sprint logs 'good' item correctly
         date = self._get_sprint_date()
@@ -146,8 +146,13 @@ class TestBot(TestBase):
             u'{"color": "good", "text": "The coffee was great", "title": "Good"}]}'
         self.assertEqual(robo_response.data, expected_list)
 
-        # Reset all and check that no items are found anymore
+        # Reset sprint
         robo_response = self.post_command(text=u'reset', slash_command=u'retro')
+        expected_response = '{{"text": "All retrospective items have been deleted for *Sprint 1, started on {}*.", '.format(date) +\
+            '"response_type": "in_channel", "attachments": []}'
+        self.assertEqual(robo_response.data, expected_response)
+
+        # And check that no items are found anymore
         date = self._get_sprint_date()
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
         expected_list = u'{"text": "' +\

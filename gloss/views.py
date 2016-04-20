@@ -38,7 +38,6 @@ def add_retrospective_item_and_get_response(slash_command, category, text, user_
     if text.lower() in ALL_CMDS:
         return u'Sorry, but *{}* can\'t save *{}* because it\'s a reserved term.'.format(BOT_NAME, text)
 
-   # TODO use real sprint
     sprint = Sprint.get_current_sprint(user_name)
     category = category.lower()
 
@@ -62,7 +61,6 @@ def add_retrospective_item_and_get_response(slash_command, category, text, user_
 def get_retrospective_items_response(slash_command, user_name):
     ''' Get all the retrospective item for the current sprint
     '''
-    # TODO use real sprint
     sprint = Sprint.get_current_sprint(user_name)
     items = RetrospectiveItem.get_retrospective_items_for_sprint(sprint)
     if items.count() == 0:
@@ -98,18 +96,18 @@ def start_new_sprint(slash_command, user_name):
 
     return u'New sprint: *{}*.'.format(sprint)
 
-def reset_all(slash_command, user_name):
-    ''' Delete all sprintes and retrospective items.
+def reset_current_sprint(slash_command, user_name):
+    ''' Delete all retrospective items in current sprint.
     '''
+    sprint = Sprint.get_current_sprint(user_name)
+    items = RetrospectiveItem.get_retrospective_items_for_sprint(sprint)
     try:
-        RetrospectiveItem.query.delete()
-        db.engine.execute("ALTER SEQUENCE retrospective_items_id_seq RESTART WITH 1")
-        Sprint.query.delete()
-        db.engine.execute("ALTER SEQUENCE sprints_id_seq RESTART WITH 1")
+        items.delete()
+        db.session.commit()
     except Exception as e:
-        return u'Sorry, but *{}* was unable to delete all sprints and retrospective items: {}, {}.'.format(BOT_NAME, e.message, e.args)
+        return u'Sorry, but *{}* was unable to delete retrospective items: {}, {}.'.format(BOT_NAME, e.message, e.args)
 
-    return u'All sprints and retrospective items have been deleted'.format(sprint)
+    return u'All retrospective items have been deleted for *{}*.'.format(sprint)
 
 def format_json_response(response, in_channel=True):
     ''' Format response for Slack
@@ -187,7 +185,7 @@ def index():
 
     # RESET
     if command_action in RESET_CMDS:
-        response = reset_all(slash_command, user_name)
+        response = reset_current_sprint(slash_command, user_name)
         return format_json_response(response)
 
     # HELP
