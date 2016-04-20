@@ -87,9 +87,10 @@ class TestBot(TestBase):
         robo_response = self.post_command(text=u'The tea was great', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
         expected_list = u'{{"text": "Retrospective items for *Sprint 1, started on {}*:", '.format(date) +\
-            u'"response_type": "in_channel", ' +\
-            u'"attachments": [{"text": "*Bad*:\\nThe coffee was bad\\n\\n*Good*:\\nThe coffee was great\\n' +\
-            u'The tea was great\\n\\n*Try*:\\nMake more coffee"}]}'
+            u'"response_type": "in_channel", "attachments": [' +\
+            u'{"color": "danger", "text": "The coffee was bad", "title": "Bad"}, ' +\
+            u'{"color": "good", "text": "The coffee was great\\nThe tea was great", "title": "Good"}, ' +\
+            u'{"color": "warning", "text": "Make more coffee", "title": "Try"}]}'
         self.assertEqual(robo_response.data, expected_list)
 
     def test_help(self):
@@ -106,10 +107,9 @@ class TestBot(TestBase):
         # Test first sprint logs 'good' item correctly
         robo_response = self.post_command(text=u'The coffee was great', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
-        expected_list = u'{"text": "' +\
-            u'Retrospective items for *Sprint 1, started on {}*:\\n'.format(date) +\
-            u'Good:\\nThe coffee was great\\n\\n' +\
-            u'", "response_type": "in_channel", "attachments": []}'
+        expected_list = u'{{"text": "Retrospective items for *Sprint 1, started on {}*:", '.format(date) +\
+            u'"response_type": "in_channel", "attachments": [' +\
+            u'{"color": "good", "text": "The coffee was great", "title": "Good"}]}'
         self.assertEqual(robo_response.data, expected_list)
 
         # Start a new sprint and check that new item is in it
@@ -123,10 +123,9 @@ class TestBot(TestBase):
         # Test second sprint logs another 'good' item correctly
         robo_response = self.post_command(text=u'The coffee was great again', slash_command=u'good')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
-        expected_list = u'{"text": "' +\
-            u'Retrospective items for *Sprint 2, started on {}*:\\n'.format(date) +\
-            u'Good:\\nThe coffee was great again\\n\\n' +\
-            u'", "response_type": "in_channel", "attachments": []}'
+        expected_list = u'{{"text": "Retrospective items for *Sprint 2, started on {}*:", '.format(date) +\
+            u'"response_type": "in_channel", "attachments": [' +\
+            u'{"color": "good", "text": "The coffee was great again", "title": "Good"}]}'
         self.assertEqual(robo_response.data, expected_list)
 
     def _get_sprint_date(self):

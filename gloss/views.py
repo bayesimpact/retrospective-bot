@@ -69,13 +69,17 @@ def get_retrospective_items_response(slash_command, user_name):
 
 
     response = u'Retrospective items for *{}*:'.format(sprint)
-    response_attachment_by_category = [
-        u'*{}*:\n'.format(category.capitalize()) + '\n'.join([item.text for item in items_in_category])
+    colors_by_category = {'good': 'good', 'bad': 'danger', 'try': 'warning'}
+    attachments = [
+        {
+            'title': category.capitalize(),
+            'text': '\n'.join([item.text for item in items_in_category]),
+            'color': colors_by_category[category],
+        }
         for category, items_in_category in items_by_category
     ]
-    response_attachment = '\n\n'.join(response_attachment_by_category)
 
-    return (response, response_attachment)
+    return (response, attachments)
 
 def start_new_sprint(slash_command, user_name):
     try:
@@ -90,15 +94,15 @@ def format_json_response(response, in_channel=True):
     '''
     if isinstance(response, basestring):
         text = response
-        attachment_text = None
+        attachments = None
     else:
         text = response[0]
-        attachment_text = response[1]
+        attachments = response[1]
 
     response_dict = {
         'response_type': 'in_channel' if in_channel else 'ephemeral',
         'text': text,
-        'attachments': [{'text': attachment_text}] if attachment_text else []
+        'attachments': attachments if attachments else []
     }
 
     response_json = json.dumps(response_dict)
