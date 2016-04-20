@@ -103,11 +103,11 @@ def reset_all(slash_command, user_name):
     '''
     try:
         RetrospectiveItem.query.delete()
-        db.engine.execute("ALTER TABLE RetrospectiveItem AUTO_INCREMENT = 1;")
+        db.engine.execute("ALTER SEQUENCE retrospective_items_id_seq RESTART WITH 1")
         Sprint.query.delete()
-        db.engine.execute("ALTER TABLE Sprint AUTO_INCREMENT = 1;")
+        db.engine.execute("ALTER SEQUENCE sprints_id_seq RESTART WITH 1")
     except Exception as e:
-        return u'Sorry, but *{}* was unable to delete all sprints and retrospective items.'.format(BOT_NAME, e.message, e.args)
+        return u'Sorry, but *{}* was unable to delete all sprints and retrospective items: {}, {}.'.format(BOT_NAME, e.message, e.args)
 
     return u'All sprints and retrospective items have been deleted'.format(sprint)
 
