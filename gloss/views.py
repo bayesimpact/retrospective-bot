@@ -42,19 +42,21 @@ def add_retrospective_item_and_get_response(slash_command, category, text, user_
     category = category.lower()
 
     # save the item in the database
-    retrospective = RetrospectiveItem(
+    retrospective_item = RetrospectiveItem(
         sprint_id=sprint.id,
         category=category,
         text=text,
         user_name=user_name)
 
     try:
-        db.session.add(retrospective)
+        db.session.add(retrospective_item)
         db.session.commit()
     except Exception as e:
         return u'Sorry, but *{}* was unable to save that retrospective item: {}, {}.'.format(BOT_NAME, e.message, e.args)
 
-    return u'*{}* successfully saved for *{}*.'.format(retrospective, sprint)
+    response = u'New retrospective item for *{}*:'.format(sprint)
+    attachments = get_retrospective_items_attachments([retrospective_item])
+    return (response, attachments)
 
 def get_retrospective_items_response(slash_command, user_name):
     ''' Get all the retrospective item for the current sprint
@@ -64,11 +66,16 @@ def get_retrospective_items_response(slash_command, user_name):
     items = RetrospectiveItem.get_retrospective_items_for_sprint(sprint)
     if items.count() == 0:
         return 'No retrospective items yet for *{}*.'.format(sprint)
-    items = sorted(items, key=lambda i: i.category)
-    items_by_category = groupby(items, lambda i: i.category)
-
 
     response = u'Retrospective items for *{}*:'.format(sprint)
+    attachments = get_retrospective_items_attachments(items)
+    return (response, attachments)
+
+def get_retrospective_items_attachments(retrospective_items):
+    ''' Return Slack message attachements to show the given retrospective items
+    '''
+    retrospective_items = sorted(retrospective_items, key=lambda i: i.category)
+    items_by_category = groupby(retrospective_items, lambda i: i.category)
     colors_by_category = {'good': 'good', 'bad': 'danger', 'try': 'warning'}
     attachments = [
         {
@@ -78,8 +85,7 @@ def get_retrospective_items_response(slash_command, user_name):
         }
         for category, items_in_category in items_by_category
     ]
-
-    return (response, attachments)
+    return attachments
 
 def start_new_sprint(slash_command, user_name):
     try:
