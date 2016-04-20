@@ -164,10 +164,10 @@ SELECT * FROM alembic_version;
 If that gives you an error like `ERROR:  relation "alembic_version" does not exist` then you need to create that table. First type `\q` to leave `psql`, then run this heroku command:
 
 ```
-heroku run python manage.py db stamp 578b43a08697
+heroku run python manage.py db stamp 574083c098fc
 ```
 
-That will create the `alembic_version` table and give it a value for `version_num` of `578b43a08697`, which matches [the inital database migration](https://github.com/codeforamerica/glossary-bot/blob/master/migrations/versions/578b43a08697_initial_migration.py) for the application.
+That will create the `alembic_version` table and give it a value for `version_num` of `574083c098fc`, which matches [the inital database migration](https://github.com/bayesimpact/retrospective-bot/blob/master/migrations/versions/574083c098fc_create_retrospective_items_table.py) for the application.
 
 Now that you've done that, you should be able to run
 

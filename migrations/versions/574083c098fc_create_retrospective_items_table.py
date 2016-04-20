@@ -1,14 +1,14 @@
 """create retrospective_items table
 
 Revision ID: 574083c098fc
-Revises: 201bae6698f6
+Revises: None
 Create Date: 2016-04-18 14:56:01.271624
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '574083c098fc'
-down_revision = '201bae6698f6'
+down_revision = None
 
 from alembic import op
 import sqlalchemy as sa
