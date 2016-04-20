@@ -196,7 +196,7 @@ def index():
             u'*{command} try <item>* to save an item in the "try" list',
             u'*{command} list* to see the different lists saved for the current sprint',
             u'*{command} new* to start a fresh list for the new scrum sprint',
-            u'*{command} reset* to permanently delete all saved sprints and items (use with caution)',
+            u'*{command} reset* to delete retrospective items in the current sprint (use when you created a mess)',
             u'*{command} help* to see this message',
         ]).format(command=slash_command)
         # Don't show help to other users in th channel
