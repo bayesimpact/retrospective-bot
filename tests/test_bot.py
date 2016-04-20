@@ -60,8 +60,14 @@ class TestBot(TestBase):
         else:
             # '/retrospective good Bla bla'
             robo_response = self.post_command(text=u'{} {}'.format(category, text), slash_command=u'retro')
-        self.assertTrue(u'*{}: {}* successfully saved'.format(category.capitalize(), text) in robo_response.data, robo_response.data)
 
+        date = self._get_sprint_date()
+        expected_colors_by_category = {'good': 'good', 'bad': 'danger', 'try': 'warning'}
+        expected_color = expected_colors_by_category[category]
+        self.assertEqual(robo_response.data, u'{{"text": "New retrospective item for *Sprint 1, started on {}*:", '.format(date) +\
+            u'"response_type": "in_channel", "attachments": [' +\
+            u'{{"color": "{}", "text": "{}", "title": "{}"}}]}}'.format(expected_color, text, category.capitalize())
+        )
         filters = (RetrospectiveItem.category == category, RetrospectiveItem.text == text)
         retrospective_item_check = self.db.session.query(RetrospectiveItem).filter(*filters).first()
         self.assertIsNotNone(retrospective_item_check)
@@ -112,7 +118,7 @@ class TestBot(TestBase):
             u'{"color": "good", "text": "The coffee was great", "title": "Good"}]}'
         self.assertEqual(robo_response.data, expected_list)
 
-        # Start a new sprint and check that new item is in it
+        # Start a new sprint and check that no item is in it
         robo_response = self.post_command(text=u'new', slash_command=u'retro')
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
         expected_list = u'{"text": "' +\
@@ -126,6 +132,27 @@ class TestBot(TestBase):
         expected_list = u'{{"text": "Retrospective items for *Sprint 2, started on {}*:", '.format(date) +\
             u'"response_type": "in_channel", "attachments": [' +\
             u'{"color": "good", "text": "The coffee was great again", "title": "Good"}]}'
+        self.assertEqual(robo_response.data, expected_list)
+
+    def test_reset_all(self):
+        ''' Test deleting all sprints and retrospective items with POST.
+        '''
+        # Test first sprint logs 'good' item correctly
+        date = self._get_sprint_date()
+        robo_response = self.post_command(text=u'The coffee was great', slash_command=u'good')
+        robo_response = self.post_command(text=u'list', slash_command=u'retro')
+        expected_list = u'{{"text": "Retrospective items for *Sprint 1, started on {}*:", '.format(date) +\
+            u'"response_type": "in_channel", "attachments": [' +\
+            u'{"color": "good", "text": "The coffee was great", "title": "Good"}]}'
+        self.assertEqual(robo_response.data, expected_list)
+
+        # Reset all and check that no items are found anymore
+        robo_response = self.post_command(text=u'reset', slash_command=u'retro')
+        date = self._get_sprint_date()
+        robo_response = self.post_command(text=u'list', slash_command=u'retro')
+        expected_list = u'{"text": "' +\
+            u'No retrospective items yet for *Sprint 1, started on {}*.'.format(date) +\
+            u'", "response_type": "in_channel", "attachments": []}'
         self.assertEqual(robo_response.data, expected_list)
 
     def _get_sprint_date(self):

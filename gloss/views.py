@@ -17,7 +17,8 @@ CATEGORY_CMDS = GOOD_CMDS + BAD_CMDS + TRY_CMDS
 NEW_CMDS = (u'new',)
 LIST_CMDS = (u'list',)
 HELP_CMDS = (u'help', u'?')
-ALL_CMDS = CATEGORY_CMDS + NEW_CMDS + HELP_CMDS + LIST_CMDS
+RESET_CMDS = (u'reset',)
+ALL_CMDS = CATEGORY_CMDS + NEW_CMDS + LIST_CMDS + HELP_CMDS + RESET_CMDS
 
 BOT_NAME = u'Retrospective Bot'
 
@@ -88,12 +89,27 @@ def get_retrospective_items_attachments(retrospective_items):
     return attachments
 
 def start_new_sprint(slash_command, user_name):
+    ''' Start a new sprint with a new empty retrospective item list.
+    '''
     try:
         sprint = Sprint.create_new_sprint(user_name)
     except Exception as e:
         return u'Sorry, but *{}* was unable to create new sprint: {}, {}.'.format(BOT_NAME, e.message, e.args)
 
     return u'New sprint: *{}*.'.format(sprint)
+
+def reset_all(slash_command, user_name):
+    ''' Delete all sprintes and retrospective items.
+    '''
+    try:
+        RetrospectiveItem.query.delete()
+        db.engine.execute("ALTER TABLE RetrospectiveItem AUTO_INCREMENT = 1;")
+        Sprint.query.delete()
+        db.engine.execute("ALTER TABLE Sprint AUTO_INCREMENT = 1;")
+    except Exception as e:
+        return u'Sorry, but *{}* was unable to delete all sprints and retrospective items.'.format(BOT_NAME, e.message, e.args)
+
+    return u'All sprints and retrospective items have been deleted'.format(sprint)
 
 def format_json_response(response, in_channel=True):
     ''' Format response for Slack
@@ -169,6 +185,11 @@ def index():
         response = start_new_sprint(slash_command, user_name)
         return format_json_response(response)
 
+    # RESET
+    if command_action in RESET_CMDS:
+        response = reset_all(slash_command, user_name)
+        return format_json_response(response)
+
     # HELP
     if command_action in HELP_CMDS or command_text == u'' or command_text == u' ':
         response = '\n'.join([
@@ -177,6 +198,7 @@ def index():
             u'*{command} try <item>* to save an item in the "try" list',
             u'*{command} list* to see the different lists saved for the current sprint',
             u'*{command} new* to start a fresh list for the new scrum sprint',
+            u'*{command} reset* to permanently delete all saved sprints and items (use with caution)',
             u'*{command} help* to see this message',
         ]).format(command=slash_command)
         # Don't show help to other users in th channel
