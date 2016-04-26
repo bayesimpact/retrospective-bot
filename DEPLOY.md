@@ -14,9 +14,9 @@ Glossary Bot is a [Flask](http://flask.pocoo.org/) app built to run on [Heroku](
 
 Glossary Bot uses two Slack integrations: [Slash Commands](https://api.slack.com/slash-commands) for private communication between the bot and the user, and [Incoming Webhooks](https://api.slack.com/incoming-webhooks) for posting public messages.
 
-[Set up a Slash Command integration](https://my.slack.com/services/new/slash-commands). There are three critical values that you need to set or save: **Command** is the command people on Slack will use to communicate with the bot. We use `/gloss`. **URL** is the public URL where the bot will live; **LEAVE THIS PAGE OPEN** so that you can fill this in after you've deployed the application to Heroku, as described below. **Token** is used to authenticate communication between Slack and the bot; save this value for when you're setting up the bot on Heroku.
+[Set up a Slash Command integration](https://my.slack.com/services/new/slash-commands). There are three critical values that you need to set or save: **Command** is the command people on Slack will use to communicate with the bot. We use `/retro`. **URL** is the public URL where the bot will live; **LEAVE THIS PAGE OPEN** so that you can fill this in after you've deployed the application to Heroku, as described below. **Token** is used to authenticate communication between Slack and the bot; save this value for when you're setting up the bot on Heroku.
 
-[Set up an Incoming Webhooks integration](https://my.slack.com/services/new/incoming-webhook). The first important values here is **Post to Channel**, which is a default channel where public messages from the bot will appear. This default is always overridden by the bot, but you do need to have one – we created a new channel called *#glossary-bot* for this purpose. Save the value of **Webhook URL**; this is the URL that the bot will POST public messages to, and you'll need it when setting up Gloss Bot on Heroku.
+[Set up an Incoming Webhooks integration](https://my.slack.com/services/new/incoming-webhook). The first important values here is **Post to Channel**, which is a default channel where public messages from the bot will appear. This default is always overridden by the bot, but you do need to have one – we created a new channel called *#retrospective-bot* for this purpose. Save the value of **Webhook URL**; this is the URL that the bot will POST public messages to, and you'll need it when setting up Gloss Bot on Heroku.
 
 #### Deploy on Heroku
 
@@ -25,17 +25,17 @@ Now it's time to deploy the bot to Heroku! First, make sure you've got the basic
 Clone Glossary Bot's repository and cd into the resulting directory:
 
 ```
-git clone git@github.com:codeforamerica/glossary-bot.git
-cd glossary-bot
+git clone git@github.com:bayesimpact/retrospective-bot.git
+cd retrospective-bot
 ```
 
-Now, create a new Heroku application. You can give it a name: `heroku create my-glossary-bot`, or let Heroku generate one: `heroku create`. You won't see this name in Slack, it'll just be part of the URL that Slack uses to communicate with the bot behind the scenes.
+Now, create a new Heroku application. You can give it a name: `heroku create my-retrospective-bot`, or let Heroku generate one: `heroku create`. You won't see this name in Slack, it'll just be part of the URL that Slack uses to communicate with the bot behind the scenes.
 
 ```
 heroku create
 ```
 
-When you deploy your app, it'll be reachable at a URL like `https://my-glossary-bot.herokuapp.com/`. Enter this URL into the **URL** field of the Slash Commands integration on Slack. See the [Heroku documentation](https://devcenter.heroku.com/articles/getting-started-with-python-o#deploy-your-application-to-heroku) for more configuration options.
+When you deploy your app, it'll be reachable at a URL like `https://my-retrospective-bot.herokuapp.com/`. Enter this URL into the **URL** field of the Slash Commands integration on Slack. See the [Heroku documentation](https://devcenter.heroku.com/articles/getting-started-with-python-o#deploy-your-application-to-heroku) for more configuration options.
 
 To give the bot everything it needs to communicate with Slack, set the config variables you saved when you set up the Slack integrations above. The **Token** from the Slash Command integration:
 
@@ -63,7 +63,7 @@ When that's finished, initialize the database:
 heroku run python manage.py db upgrade
 ```
 
-And you're good to get glossing! Open up Slack and type `/gloss help` to start.
+And you're good to go! Open up Slack and type `/retro help` to start.
 
 #### Upgrade on Heroku
 
@@ -78,13 +78,13 @@ First, make sure you've got the basics set up by following [Heroku's instruction
 Open the terminal and clone the Gloss Bot repository onto your machine:
 
 ```
-git clone git@github.com:codeforamerica/glossary-bot.git
+git clone git@github.com:bayesimpact/retrospective-bot.git
 ```
 
 Then change into the resulting directory:
 
 ```
-cd glossary-bot
+cd retrospective-bot
 ```
 
 Find the name of the heroku app that's running Gloss Bot by typing:
@@ -95,7 +95,7 @@ heroku apps
 
 This'll show you a list of apps, one of which should be your Gloss Bot instance.
 
-If you're not sure which app is the Gloss Bot app, go to [your Slack's custom integrations page](https://my.slack.com/apps/manage/custom-integrations), click into *Slash Commands*, and find the slash command you configured for Gloss Bot. It'll say something like _When a user enters /gloss, POST to https://my-cool-bot-12345.herokuapp.com/_. Whatever's in the URL in place of 'my-cool-bot-12345' is the name of your app.
+If you're not sure which app is the Gloss Bot app, go to [your Slack's custom integrations page](https://my.slack.com/apps/manage/custom-integrations), click into *Slash Commands*, and find the slash command you configured for Gloss Bot. It'll say something like _When a user enters /retro, POST to https://my-cool-bot-12345.herokuapp.com/_. Whatever's in the URL in place of 'my-cool-bot-12345' is the name of your app.
 
 Back in the terminal, get more info on the app by typing (replacing _my-cool-bot-12345_ with the name of your app):
 

@@ -13,8 +13,8 @@ Glossary Bot is a [Flask](http://flask.pocoo.org/) app built to run on [Heroku](
 To install locally, clone this repository and cd into the resulting directory:
 
 ```
-git clone git@github.com:codeforamerica/glossary-bot.git
-cd glossary-bot
+git clone git@github.com:bayesimpact/retrospective-bot.git
+cd retrospective-bot
 ```
 
 Set up and activate a new virtual environment using [Virtualenv](https://github.com/codeforamerica/howto/blob/master/Python-Virtualenv.md):
@@ -63,7 +63,7 @@ python manage.py runserver
 
 #### Test
 
-To run the app's tests, first create a test database. Make sure the name of the database matches the value of `environ['DATABASE_URL']` set in the `setUp()` function in [test/test_bot.py](https://github.com/codeforamerica/glossary-bot/blob/master/tests/test_bot.py):
+To run the app's tests, first create a test database. Make sure the name of the database matches the value of `environ['DATABASE_URL']` set in the `setUp()` function in [test/test_bot.py](https://github.com/bayesimpact/retrospective-bot/blob/master/tests/test_bot.py):
 
 ```
 createdb glossary-bot-test
