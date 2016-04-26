@@ -40,7 +40,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/Users/florianjourda/Code/retrospective-bot/retro/venv-glossary-bot"
+VIRTUAL_ENV="/Users/florianjourda/Code/retrospective-bot/retro/venv-retrospective-bot"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

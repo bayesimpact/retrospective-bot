@@ -20,13 +20,13 @@ cd retrospective-bot
 Set up and activate a new virtual environment using [Virtualenv](https://github.com/codeforamerica/howto/blob/master/Python-Virtualenv.md):
 
 ```
-virtualenv venv-glossary-bot
+virtualenv venv-retrospective-bot
 ```
 
 Activate the virtual environment:
 
 ```
-source venv-glossary-bot/bin/activate
+source venv-retrospective-bot/bin/activate
 ```
 
 Install the required packages with pip:

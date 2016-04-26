@@ -1,4 +1,4 @@
-#!/Users/florianjourda/Code/retrospective-bot/retro/venv-glossary-bot/bin/python
+#!/Users/florianjourda/Code/retrospective-bot/retro/venv-retrospective-bot/bin/python
 
 import sys
 import getopt
