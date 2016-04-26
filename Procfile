@@ -1,1 +1,1 @@
-web: gunicorn gloss.wsgi:app --log-file=-
+web: gunicorn retro.wsgi:app --log-file=-

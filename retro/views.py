@@ -1,5 +1,5 @@
 from flask import abort, current_app, request, Response
-from . import gloss as app
+from . import retro as app
 from . import db
 from itertools import groupby
 from models import Sprint, RetrospectiveItem

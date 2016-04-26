@@ -1,7 +1,7 @@
 from flask import Blueprint, Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 
-gloss = Blueprint('gloss', __name__)
+retro = Blueprint('retro', __name__)
 db = SQLAlchemy()
 
 def create_app(environ):
@@ -13,7 +13,7 @@ def create_app(environ):
 
     db.init_app(app)
 
-    app.register_blueprint(gloss)
+    app.register_blueprint(retro)
     return app
 
 from . import views, errors
