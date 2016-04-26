@@ -4,7 +4,7 @@ Glossary Bot is a Slack bot that maintains a glossary of terms created by its us
 
 It is a simple web app designed to be used as a [Slack integration](https://slack.com/integrations). Specifically, it responds to POSTs created by the Slack *Slash Commands* integration and responds with messages to Slack's *Incoming Webhooks* integration.
 
-![DemoGif](static/gloss-bot-demo.gif)
+![DemoGif](static/retrospective-bot-demo.gif)
 
 #### Deploy Glossary Bot
 
