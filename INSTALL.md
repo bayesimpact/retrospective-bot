@@ -38,7 +38,7 @@ pip install -r requirements.txt
 Create the production [PostgreSQL](https://github.com/codeforamerica/howto/blob/master/PostgreSQL.md) database:
 
 ```
-createdb glossary-bot
+createdb retrospective-bot
 ```
 
 Copy `env.sample` to `.env`:
@@ -66,7 +66,7 @@ python manage.py runserver
 To run the app's tests, first create a test database. Make sure the name of the database matches the value of `environ['DATABASE_URL']` set in the `setUp()` function in [test/test_bot.py](https://github.com/bayesimpact/retrospective-bot/blob/master/tests/test_bot.py):
 
 ```
-createdb glossary-bot-test
+createdb retrospective-bot-test
 ```
 
 You can now run the tests from the command line:
