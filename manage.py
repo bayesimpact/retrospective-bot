@@ -1,6 +1,6 @@
 from os import environ, path
-from gloss import create_app, db
-from gloss.models import Sprint, RetrospectiveItem
+from retro import create_app, db
+from retro.models import Sprint, RetrospectiveItem
 from flask.ext.script import Manager, prompt_bool
 from flask.ext.migrate import Migrate, MigrateCommand
 

@@ -2,7 +2,7 @@
 # -*- coding: utf8 -*-
 import unittest
 from os import environ
-from gloss import create_app, db
+from retro import create_app, db
 
 class TestBase(unittest.TestCase):
     ''' A base class for bot tests.

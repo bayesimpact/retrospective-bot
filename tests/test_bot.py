@@ -5,7 +5,7 @@ import unittest
 import json
 from httmock import response, HTTMock
 from flask import current_app
-from gloss.models import Sprint, RetrospectiveItem
+from retro.models import Sprint, RetrospectiveItem
 from datetime import datetime, timedelta
 from tests.test_base import TestBase
 
