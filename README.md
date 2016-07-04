@@ -1,22 +1,22 @@
-# Glossary Bot
+# Retrospective Bot
 
-Glossary Bot is a Slack bot that records 'Good', 'Bad' and 'Try' things for the retrospective of the current scrum sprint.
+Retrospective Bot is a Slack bot that records 'Good', 'Bad' and 'Try' things for the retrospective of the current scrum sprint.
 
 It is a simple web app designed to be used as a [Slack integration](https://slack.com/integrations). Specifically, it responds to POSTs created by the Slack *Slash Commands* integration and responds with messages to Slack's *Incoming Webhooks* integration.
 
 ![DemoGif](static/retrospective-bot-demo.gif)
 
-#### Deploy Glossary Bot
+#### Deploy Retrospective Bot
 
-Glossary Bot is a [Flask](http://flask.pocoo.org/) app built to run on [Heroku](https://heroku.com/). To deploy the bot using Heroku's automated setup, see below. To deploy or upgrade the bot from the command line, read [DEPLOY](DEPLOY.md). To install the bot locally for development and testing, read [INSTALL](INSTALL.md).
+Retrospective Bot is a [Flask](http://flask.pocoo.org/) app built to run on [Heroku](https://heroku.com/). To deploy the bot using Heroku's automated setup, see below. To deploy or upgrade the bot from the command line, read [DEPLOY](DEPLOY.md). To install the bot locally for development and testing, read [INSTALL](INSTALL.md).
 
 #### Set Up on Slack
 
-Glossary Bot uses two Slack integrations: [Slash Commands](https://api.slack.com/slash-commands) for private communication between the bot and the user, and [Incoming Webhooks](https://api.slack.com/incoming-webhooks) for posting public messages.
+Retrospective Bot uses two Slack integrations: [Slash Commands](https://api.slack.com/slash-commands) for private communication between the bot and the user, and [Incoming Webhooks](https://api.slack.com/incoming-webhooks) for posting public messages.
 
 [Set up a Slash Command integration](https://my.slack.com/services/new/slash-commands). There are three critical values that you need to set or save: **Command** is the command people on Slack will use to communicate with the bot. We use `/retro`. **URL** is the public URL where the bot will live; **LEAVE THIS PAGE OPEN** so that you can fill this in after you've deployed the application to Heroku, as described below. **Token** is used to authenticate communication between Slack and the bot; save this value for when you're setting up the bot on Heroku.
 
-[Set up an Incoming Webhooks integration](https://my.slack.com/services/new/incoming-webhook). The first important values here is **Post to Channel**, which is a default channel where public messages from the bot will appear. This default is always overridden by the bot, but you do need to have one – we created a new channel called *#retrospective-bot* for this purpose. Save the value of **Webhook URL**; this is the URL that the bot will POST public messages to, and you'll need it when setting up Gloss Bot on Heroku.
+[Set up an Incoming Webhooks integration](https://my.slack.com/services/new/incoming-webhook). The first important values here is **Post to Channel**, which is a default channel where public messages from the bot will appear. This default is always overridden by the bot, but you do need to have one – we created a new channel called *#retrospective-bot* for this purpose. Save the value of **Webhook URL**; this is the URL that the bot will POST public messages to, and you'll need it when setting up Retrospective Bot on Heroku.
 
 #### Deploy on Heroku
 
@@ -30,4 +30,4 @@ When it's done deploying, click the **View** button at the bottom of the form. A
 
 And now you're good to go! Open up Slack and type `/retro help` to start.
 
-If you installed Gloss Bot on Heroku using the Deploy on Heroku button and you want to upgrade it with the latest changes, [follow these instructions](DEPLOY.md#upgrade-on-heroku).
+If you installed Retrospective Bot on Heroku using the Deploy on Heroku button and you want to upgrade it with the latest changes, [follow these instructions](DEPLOY.md#upgrade-on-heroku).
