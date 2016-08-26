@@ -86,9 +86,12 @@ def get_retrospective_items_attachments(retrospective_items):
     ]
     return attachments
 
-def start_new_sprint(slash_command, user_name):
+def start_new_sprint(slash_command, text, user_name):
     ''' Start a new sprint with a new empty retrospective item list.
     '''
+    if text:
+        return u'Oops, did you mean "/retro good {}"?'.format(text)
+
     try:
         sprint = Sprint.create_new_sprint(user_name)
     except Exception as e:
@@ -180,7 +183,7 @@ def index():
 
     # NEW SPRINT
     if command_action in NEW_CMDS:
-        response = start_new_sprint(slash_command, user_name)
+        response = start_new_sprint(slash_command, text, user_name)
         return format_json_response(response)
 
     # RESET
