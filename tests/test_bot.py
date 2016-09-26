@@ -134,6 +134,15 @@ class TestBot(TestBase):
             u'{"color": "good", "text": "\\u2022 The coffee was great again", "title": "Good"}]}'
         self.assertEqual(robo_response.data, expected_list)
 
+    def test_start_new_sprint_with_params(self):
+        '''Test starting a sprint with commands (probably a mistake).'''
+        robo_response = self.post_command(text='new The coffee was great')
+        response = json.loads(robo_response.data)
+        self.assertEqual({
+            'text': 'Oops, did you mean "/retro good The coffee was great"?',
+            'response_type': 'in_channel',
+            'attachments': []}, response)
+
     def test_reset_current_sprint(self):
         ''' Test deleting all retrospective items in the current sprint with POST.
         '''

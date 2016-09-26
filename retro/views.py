@@ -167,7 +167,6 @@ def index():
     if command_action not in ALL_CMDS:
         command_action = HELP_CMDS[0]
 
-
     # Call different actions:
 
     # ADD GOOD, BAD or TRY
@@ -184,7 +183,7 @@ def index():
 
     # NEW SPRINT
     if command_action in NEW_CMDS:
-        response = start_new_sprint(slash_command, text, user_name)
+        response = start_new_sprint(slash_command, command_params, user_name)
         return format_json_response(response)
 
     # RESET
