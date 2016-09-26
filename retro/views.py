@@ -80,7 +80,7 @@ def get_retrospective_items_attachments(retrospective_items):
     attachments = [
         {
             'title': category.capitalize(),
-            'text': '\n\n'.join(['• ' + item.text for item in items_in_category]),
+            'text': '\n\n'.join([u'• ' + item.text for item in items_in_category]),
             'color': colors_by_category[category],
         }
         for category, items_in_category in items_by_category

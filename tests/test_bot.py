@@ -66,7 +66,7 @@ class TestBot(TestBase):
         expected_color = expected_colors_by_category[category]
         self.assertEqual(robo_response.data, u'{{"text": "New retrospective item for *Sprint 1, started on {}*:", '.format(date) +\
             u'"response_type": "in_channel", "attachments": [' +\
-            u'{{"color": "{}", "text": "{}", "title": "{}"}}]}}'.format(expected_color, text, category.capitalize())
+            u'{{"color": "{}", "text": "\\u2022 {}", "title": "{}"}}]}}'.format(expected_color, text, category.capitalize())
         )
         filters = (RetrospectiveItem.category == category, RetrospectiveItem.text == text)
         retrospective_item_check = self.db.session.query(RetrospectiveItem).filter(*filters).first()
@@ -94,9 +94,9 @@ class TestBot(TestBase):
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
         expected_list = u'{{"text": "Retrospective items for *Sprint 1, started on {}*:", '.format(date) +\
             u'"response_type": "in_channel", "attachments": [' +\
-            u'{"color": "danger", "text": "The coffee was bad", "title": "Bad"}, ' +\
-            u'{"color": "good", "text": "The coffee was great\\nThe tea was great", "title": "Good"}, ' +\
-            u'{"color": "warning", "text": "Make more coffee", "title": "Try"}]}'
+            u'{"color": "danger", "text": "\\u2022 The coffee was bad", "title": "Bad"}, ' +\
+            u'{"color": "good", "text": "\\u2022 The coffee was great\\n\\n\\u2022 The tea was great", "title": "Good"}, ' +\
+            u'{"color": "warning", "text": "\\u2022 Make more coffee", "title": "Try"}]}'
         self.assertEqual(robo_response.data, expected_list)
 
     def test_help(self):
@@ -115,7 +115,7 @@ class TestBot(TestBase):
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
         expected_list = u'{{"text": "Retrospective items for *Sprint 1, started on {}*:", '.format(date) +\
             u'"response_type": "in_channel", "attachments": [' +\
-            u'{"color": "good", "text": "The coffee was great", "title": "Good"}]}'
+            u'{"color": "good", "text": "\\u2022 The coffee was great", "title": "Good"}]}'
         self.assertEqual(robo_response.data, expected_list)
 
         # Start a new sprint and check that no item is in it
@@ -131,7 +131,7 @@ class TestBot(TestBase):
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
         expected_list = u'{{"text": "Retrospective items for *Sprint 2, started on {}*:", '.format(date) +\
             u'"response_type": "in_channel", "attachments": [' +\
-            u'{"color": "good", "text": "The coffee was great again", "title": "Good"}]}'
+            u'{"color": "good", "text": "\\u2022 The coffee was great again", "title": "Good"}]}'
         self.assertEqual(robo_response.data, expected_list)
 
     def test_reset_current_sprint(self):
@@ -143,7 +143,7 @@ class TestBot(TestBase):
         robo_response = self.post_command(text=u'list', slash_command=u'retro')
         expected_list = u'{{"text": "Retrospective items for *Sprint 1, started on {}*:", '.format(date) +\
             u'"response_type": "in_channel", "attachments": [' +\
-            u'{"color": "good", "text": "The coffee was great", "title": "Good"}]}'
+            u'{"color": "good", "text": "\\u2022 The coffee was great", "title": "Good"}]}'
         self.assertEqual(robo_response.data, expected_list)
 
         # Reset sprint
