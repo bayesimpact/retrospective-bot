@@ -14,6 +14,8 @@ class TestBase(unittest.TestCase):
         environ['SLACK_WEBHOOK_URL'] = 'http://hooks.example.com/services/HELLO/LOVELY/WORLD'
 
         self.app = create_app(environ)
+        self.app.config['DEBUG'] = True
+        self.app.config['TESTING'] = True
         self.app_context = self.app.app_context()
         self.app_context.push()
 
