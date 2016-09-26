@@ -66,7 +66,7 @@ class TestBot(TestBase):
         expected_color = expected_colors_by_category[category]
         self.assertEqual(robo_response.data, u'{{"text": "New retrospective item for *Sprint 1, started on {}*:", '.format(date) +\
             u'"response_type": "in_channel", "attachments": [' +\
-            u'{{"color": "{}", "text": "{}", "title": "{}"}}]}}'.format(expected_color, text, category.capitalize())
+            u'{{"color": "{}", "text": "\\u2022 {}", "title": "{}"}}]}}'.format(expected_color, text, category.capitalize())
         )
         filters = (RetrospectiveItem.category == category, RetrospectiveItem.text == text)
         retrospective_item_check = self.db.session.query(RetrospectiveItem).filter(*filters).first()
