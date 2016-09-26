@@ -1,4 +1,5 @@
 from os import environ, path
+import sys
 from retro import create_app, db
 from retro.models import Sprint, RetrospectiveItem
 from flask.ext.script import Manager, prompt_bool
@@ -25,7 +26,8 @@ def make_shell_context():
 def runtests():
     import unittest
     tests = unittest.TestLoader().discover('tests')
-    unittest.TextTestRunner(verbosity=1).run(tests)
+    result = unittest.TextTestRunner(verbosity=1).run(tests)
+    sys.exit(not result.wasSuccessful())
 
 @manager.command
 def dropdb():
