@@ -1,0 +1,10 @@
+FROM python:3
+
+WORKDIR /var/task
+COPY ./requirements.txt ./requirements.txt
+COPY ./entrypoint.deploy.sh ./entrypoint.sh
+
+RUN pip install --upgrade pip setuptools pipenv
+RUN pipenv --three install -r ./requirements.txt
+
+ENTRYPOINT ["./entrypoint.sh"]

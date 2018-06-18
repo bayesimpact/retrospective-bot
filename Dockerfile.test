@@ -1,0 +1,10 @@
+FROM python:3
+
+WORKDIR /test
+
+COPY requirements.txt requirements-test.txt ./
+RUN pip install -r ./requirements-test.txt
+
+COPY * ./
+
+CMD './lint_and_test.sh'

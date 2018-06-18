@@ -1,0 +1,9 @@
+{
+    "dev": {
+        "app_function": "slack_retro_bot_to_airtable.app",
+        "lambda_description": "Handler for /retro command in Slack that saves Good/Bad/Try items in Airtable.",
+        "project_name": "slack-retro-bot-to-airtable",
+        "s3_bucket": "lambda-slack-retro-bot-to-airtable-repo",
+        "runtime": "python3.6",
+    }
+}

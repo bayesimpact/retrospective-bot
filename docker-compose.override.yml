@@ -1,0 +1,24 @@
+# Overrides of Compose services used to help develop faster without rebuilding
+# the container on every change.
+version: "2"
+services:
+  test:
+    volumes:
+      - ./lint_and_test.sh:/test/lint_and_test.sh:ro
+      - ./slack_retro_bot_to_airtable.py:/test/slack_retro_bot_to_airtable.py:ro
+      - ./slack_retro_bot_to_airtable_test.py:/test/slack_retro_bot_to_airtable_test.py:ro
+      - ./slack_retro_bot_notification_example.txt:/test/slack_retro_bot_notification_example.txt:ro
+      - ./.pylintrc:/test/.pylintrc:ro
+      - ./.pycodestyle:/test/.pycodestyle:ro
+    environment:
+      AIRTABLE_RETRO_BASE_ID: $AIRTABLE_RETRO_BASE_ID
+      AIRTABLE_RETRO_API_KEY: $AIRTABLE_RETRO_API_KEY
+      SLACK_RETRO_TOKEN: $SLACK_RETRO_TOKEN
+  deploy:
+    volumes:
+      - ./slack_retro_bot_to_airtable.py:/var/task/slack_retro_bot_to_airtable.py:ro
+      - ./zappa_settings.json:/var/task/zappa_settings.json:ro
+    environment:
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION

@@ -1,0 +1,12 @@
+version: "2"
+services:
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    tty: true
+  deploy:
+    build:
+      context: .
+      dockerfile: Dockerfile.deploy
+    tty: true
