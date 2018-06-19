@@ -1,51 +1,50 @@
 #!/usr/bin/env python
-"""Test \retro commands."""
-# import json
+"""Test /retro commands."""
+
 import unittest
 from os import environ
 
-from flask import current_app
-# from slack_retro_bot_to_airtable import handle_slack_notification
+import airtablemock
+import mock
+
+import slack_retro_bot_to_airtable
 
 
+@mock.patch(slack_retro_bot_to_airtable.__name__ + '._STEPS_TO_FINISH_SETUP', None)
+@mock.patch(slack_retro_bot_to_airtable.__name__ + '._SLACK_RETRO_TOKEN', 'meowser_token')
 class TestBot(unittest.TestCase):
-    """Test \retro commands."""
+    """Test /retro commands."""
 
     def setUp(self):
         environ['DATABASE_URL'] = 'postgres:///retrospective-bot-test'
         environ['SLACK_TOKEN'] = 'meowser_token'
         environ['SLACK_WEBHOOK_URL'] = 'http://hooks.example.com/services/HELLO/LOVELY/WORLD'
 
-        # self.app = create_app(environ)
-        # self.app_context = self.app.app_context()
-        # self.app_context.push()
+        self.app = slack_retro_bot_to_airtable.app.test_client()
 
-        # self.db = db
-        # self.client = self.app.test_client()
+        self.airtable_client = airtablemock.Airtable()
+        patcher = mock.patch(
+            slack_retro_bot_to_airtable.__name__ + '._AIRTABLE_CLIENT',
+            self.airtable_client)
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
-    def tearDown(self):
-        pass
-        # self.db.session.close()
-        # self.db.drop_all()
-        # drop_all doesn't drop the alembic_version table
-        # self.db.session.execute('DROP TABLE IF EXISTS alembic_version')
-        # self.db.session.commit()
-        # self.app_context.pop()
+    def _post_command(self, text, slash_command='/retro'):
 
-    # def post_command(self, text, slash_command='/retro'):
-    #     return self.client.post('/', data={
-    #         'token': 'meowser_token',
-    #         'text': text,
-    #         'user_name': 'retroman',
-    #         'channel_id': '123456',
-    #         'command': slash_command,
-    #     })
+        return self.app.post('/handle_slack_command', data={
+            'token': 'meowser_token',
+            'text': text,
+            'user_name': 'retroman',
+            'channel_id': '123456',
+            'command': slash_command,
+            'response_url': 'https://lambda-to-slack.com',
+        })
 
     # As the name of the tests are self-explanatory, we don't need docstrings for them
     # pylint: disable=missing-docstring
     def test_app_exists(self):
         """The app exists."""
-        self.assertFalse(current_app is None)
+        self.assertTrue(self.app)
 
     # def test_unauthorized_access(self):
     #     """The app rejects unauthorized access."""
@@ -112,36 +111,38 @@ class TestBot(unittest.TestCase):
     #     # self.assertEqual(retrospective_item_check.category, category)
     #     # self.assertEqual(retrospective_item_check.text, text)
 
-    # def test_list(self):
-    #     """ Test getting the list of all items with POST.
-    #     """
-    #     date = self._get_sprint_date()
+    def test_list(self):
+        """ Test getting the list of all items with POST."""
 
-    #     # Check list is empty at first
-    #     robo_response = self.post_command(text='list', slash_command='retro')
-    #     expected_list = '{"text": "' +\
-    #         'No retrospective items yet for *Sprint 1, started on {}*.'.format(date) +\
-    #         '", "response_type": "in_channel", "attachments": []}'
-    #     self.assertEqual(robo_response.data, expected_list)
+        # Check list is empty at first
+        robo_response = self._post_command(text='list', slash_command='retro')
+        self.assertEqual(200, robo_response.status_code, msg=robo_response.data)
+        expected_list = {
+            'text': 'No retrospective items yet.',
+            'response_type': 'in_channel',
+            'attachments': [],
+        }
+        self.assertEqual(robo_response.json, expected_list)
 
-    #     # Check list is filled later
-    #     robo_response = self.post_command(
-    #         text='The coffee was great', slash_command='good')
-    #     robo_response = self.post_command(
-    #         text='The coffee was bad', slash_command='bad')
-    #     robo_response = self.post_command(
-    #         text='Make more coffee', slash_command='try')
-    #     robo_response = self.post_command(
-    #         text='The tea was great', slash_command='good')
-    #     robo_response = self.post_command(text='list', slash_command='retro')
-    #     expected_list = \
-    #         '{{"text": "Retrospective items for *Sprint 1, started on {}*:", '.format(date) +\
-    #         '"response_type": "in_channel", "attachments": [' +\
-    #         '{"color": "danger", "text": "The coffee was bad", "title": "Bad"}, ' +\
-    #         '{"color": "good", "text": "The coffee was great\\nThe tea was great", ' +\
-    #         '"title": "Good"}, ' +\
-    #         '{"color": "warning", "text": "Make more coffee", "title": "Try"}]}'
-    #     self.assertEqual(robo_response.data, expected_list)
+        check = self._post_command(text='The coffee was great', slash_command='good')
+        self.assertEqual(200, check.status_code, msg=check.data)
+        self._post_command(text='The coffee was bad', slash_command='bad')
+        self._post_command(text='The tea was great', slash_command='good')
+
+        # Check list is filled later
+        robo_response = self._post_command(text='list', slash_command='retro')
+        expected_list = {
+            'text': 'Retrospective items:',
+            'response_type': 'in_channel',
+            'attachments': [
+                {'color': 'good', 'title': 'Good'},
+                {'color': 'good', 'text': 'The coffee was great'},
+                {'color': 'good', 'text': 'The tea was great'},
+                {'color': 'danger', 'title': 'Bad'},
+                {'color': 'danger', 'text': 'The coffee was bad'},
+            ],
+        }
+        self.assertEqual(expected_list, robo_response.json)
 
     # def test_help(self):
     #     """ Test getting the help for the command.

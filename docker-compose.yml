@@ -5,8 +5,14 @@ services:
       context: .
       dockerfile: Dockerfile.test
     tty: true
+    networks:
+      - none
   deploy:
     build:
       context: .
       dockerfile: Dockerfile.deploy
     tty: true
+networks:
+  none:
+    external:
+      name: none
