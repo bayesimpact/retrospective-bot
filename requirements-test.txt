@@ -1,0 +1,7 @@
+-r requirements.txt
+mock
+nose
+nose-watch
+pycodestyle
+pylint
+pylint_quotes

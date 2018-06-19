@@ -1,0 +1,22 @@
+[REPORTS]
+output=colorized
+# TODO(pascal): Enable no-member when
+# https://github.com/PyCQA/pylint/issues/1276 is solved.
+disable=I,R,no-member
+reports=no
+
+[MISCELLANEOUS]
+notes=FIXME,XXX
+string-quote=single-avoid-escape
+
+[VARIABLES]
+dummy-variables-rgx=unused_.*
+
+[DESIGN]
+ignored-argument-names=unused_.*
+
+# Override default regex to allow long method names in tests.
+method-rgx=([a-z_][a-z0-9_]{4,30}|test_[a-z0-9_]+)$
+
+[TYPECHECK]
+ignored-modules=pandas.*,numpy.*,farmhash,bob_emploi.frontend.api.*
