@@ -1,4 +1,5 @@
 """Integration to send Slack messages when new code reviews are sent in Reviewable."""
+
 import json
 import os
 import re
@@ -24,7 +25,7 @@ _ALL_CMDS = _CATEGORY_CMDS + _NEW_CMDS + _LIST_CMDS + _HELP_CMDS
 
 # We use an int as a first letter to sort the sections, it will be hidden later.
 _GOOD_TITLE = '1 Good'
-_BAD_TITLE = '2️ Bad'
+_BAD_TITLE = '2 Bad'
 _TRY_TO_REVIEW_TITLE = '3 Try'
 _TRY_TO_COMPLETE_TITLE = '4 Try We Committed To'
 _COLORS_BY_TITLE = {
@@ -53,6 +54,7 @@ if _MISSING_ENV_VARIABLES:
     _STEPS_TO_FINISH_SETUP = \
         'Need to setup the following AWS Lambda function env variables:\n{}'.format(
             _MISSING_ENV_VARIABLES)
+    _AIRTABLE_CLIENT = None
 else:
     _STEPS_TO_FINISH_SETUP = None
     _AIRTABLE_CLIENT = airtable.Airtable(
@@ -62,6 +64,7 @@ else:
 @app.route('/')
 def index():
     """Root endpoint."""
+
     if _STEPS_TO_FINISH_SETUP:
         status = '❗️{}'.format(_STEPS_TO_FINISH_SETUP)
     else:
@@ -74,6 +77,7 @@ def index():
 @app.route('/handle_slack_command', methods=['POST'])
 def handle_slack_command():
     """Receives a Slack webhook notification and handles it to update Airtable."""
+
     if _STEPS_TO_FINISH_SETUP:
         return _STEPS_TO_FINISH_SETUP, 200
 
@@ -149,6 +153,7 @@ def handle_slack_command():
 @app.route('/handle_slack_button_click', methods=['POST'])
 def handle_slack_button_click():
     """Receives a Slack webhook notification and handles it to update Airtable."""
+
     if _STEPS_TO_FINISH_SETUP:
         return _STEPS_TO_FINISH_SETUP, 200
 
@@ -230,6 +235,7 @@ def _add_retrospective_item_and_get_response(category, item_object, user_name):
 
 def _get_retrospective_items_response():
     """Get all the retrospective item for the current sprint."""
+
     items = _AIRTABLE_CLIENT.get(
         _AIRTABLE_RETRO_ITEMS_TABLE_ID,
         view=_AIRTABLE_RETRO_ITEMS_CURRENT_VIEW,
@@ -244,6 +250,7 @@ def _get_retrospective_items_response():
 
 def _get_retrospective_items_attachments(retrospective_items):
     """Return Slack message attachements to show the given retrospective items."""
+
     retrospective_items = sorted(retrospective_items, key=_get_category_title)
     items_by_category = groupby(retrospective_items, key=_get_category_title)
     attachments = []
@@ -275,6 +282,7 @@ def _get_retrospective_item_attachment(item, show_emoji_and_no_actions=False):
     Use show_emoji_and_no_actions to show the new state of the items without allowing more
     actions on it.
     """
+
     fields = item['fields']
     category = fields.get('Category')
     emoji = ''
@@ -307,17 +315,22 @@ def _get_retrospective_item_attachment(item, show_emoji_and_no_actions=False):
     else:
         emoji = ''
 
-    return {
+    attachment = {
         'text': emoji + fields.get('Object'),
         'color': _COLORS_BY_TITLE[_get_category_title(item)],
-        'callback_id': item['id'],
-        'attachment_type': 'default',
-        'actions': actions,
     }
+    if actions:
+        attachment.update({
+            'callback_id': item['id'],
+            'attachment_type': 'default',
+            'actions': actions,
+        })
+    return attachment
 
 
 def _mark_retrospective_items_as_reviewed(response_url):
     """Start a new sprint with a new empty retrospective item list."""
+
     _async_mark_retrospective_items_as_reviewed(response_url)
     return 'Marking all current retrospective items as reviewed...'
 
@@ -359,6 +372,7 @@ def _async_mark_retrospective_items_as_reviewed(response_url):
 
 def _format_json_response(response, in_channel=True):
     """Format response for Slack."""
+
     if isinstance(response, str):
         text = response
         attachments = None
