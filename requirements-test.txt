@@ -1,4 +1,5 @@
 -r requirements.txt
+airtablemock
 mock
 nose
 nose-watch
