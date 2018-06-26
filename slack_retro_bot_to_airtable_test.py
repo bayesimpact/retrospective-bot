@@ -23,12 +23,15 @@ class TestBot(unittest.TestCase):
         self.app = slack_retro_bot_to_airtable.app.test_client()
 
         airtablemock.clear()
-        self.airtable_client = airtablemock.Airtable()
+        self.airtable_client = airtablemock.Airtable('retro-base-id')
         patcher = mock.patch(
             slack_retro_bot_to_airtable.__name__ + '._AIRTABLE_CLIENT',
             self.airtable_client)
         patcher.start()
         self.addCleanup(patcher.stop)
+
+        self.airtable_client.create('Items', {'sprint': 'old'})
+        self.airtable_client.create_view('Items', 'Current View', 'sprint != "old"')
 
     def _post_command(self, text, slash_command='/retro'):
 
@@ -73,6 +76,10 @@ class TestBot(unittest.TestCase):
         return self._test_set_retrospective_item(
             'good', 'good', 'The tea was great', is_using_direct_command=False)
 
+    def test_set_retrospective_item_with_quotes(self):
+        return self._test_set_retrospective_item(
+            'good', 'good', 'It\'s possible to use "quotes"')
+
     def test_set_retrospective_item_with_retrospective_bad_command(self):
         return self._test_set_retrospective_item(
             'bad', 'danger', 'The tea was bad', is_using_direct_command=False)
@@ -81,7 +88,7 @@ class TestBot(unittest.TestCase):
     #     return self._test_set_retrospective_item(
     #         'try', 'warning', 'Make more tea', is_using_direct_command=False)
 
-    def _test_set_retrospective_item(self, category, color, text, is_using_direct_command):
+    def _test_set_retrospective_item(self, category, color, text, is_using_direct_command=False):
         """ A retrospective item set via a POST is recorded in the database."""
         if is_using_direct_command:
             # '/good Bla bla'

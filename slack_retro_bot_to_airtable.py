@@ -214,8 +214,8 @@ def _add_retrospective_item_and_get_response(category, item_object, user_name):
     existing_item = _AIRTABLE_CLIENT.get(
         _AIRTABLE_RETRO_ITEMS_TABLE_ID,
         view=_AIRTABLE_RETRO_ITEMS_CURRENT_VIEW,
-        filter_by_formula='AND(Category = "{}", Object = "{}")'.format(
-            category, item_object.replace('"', '\"')),
+        filter_by_formula='AND(Category = {}, Object = {})'.format(
+            json.dumps(category), json.dumps(item_object)),
     ).get('records')
     if existing_item:
         return 'This retrospective item has already been added!'
