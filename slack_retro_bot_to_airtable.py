@@ -123,7 +123,7 @@ def handle_slack_command():
 
     # /retro list
     if command_action in _LIST_CMDS:
-        response = _get_retrospective_items_response()
+        response = _get_retrospective_items_response(command_params)
         return _format_json_response(response)
 
     # /retro new
@@ -143,6 +143,7 @@ def handle_slack_command():
             '*{command} bad <item>* to save an item in the "bad" list',
             '*{command} try <item>* to save an item in the "try" list',
             '*{command} list* to see the different lists saved for the current sprint',
+            '*{command} list <good/bad/try>* to see one of the lists saved for the current sprint',
             '*{command} new* to start a fresh list for the new scrum sprint',
             '*{command} help* to see this message',
         ]).format(command=slash_command)
@@ -233,11 +234,16 @@ def _add_retrospective_item_and_get_response(category, item_object, user_name):
     return (response, attachments)
 
 
-def _get_retrospective_items_response():
+def _get_retrospective_items_response(filter_category=None):
     """Get all the retrospective item for the current sprint."""
+
+    if filter_category and filter_category not in _CATEGORY_CMDS:
+        return 'Wrong category "{}", should be {} or empty.'.format(
+            filter_category, ', '.join('"{}"'.format(c) for c in _CATEGORY_CMDS))
 
     items = _AIRTABLE_CLIENT.get(
         _AIRTABLE_RETRO_ITEMS_TABLE_ID,
+        filter_by_formula='Category = "{}"'.format(filter_category) if filter_category else None,
         view=_AIRTABLE_RETRO_ITEMS_CURRENT_VIEW,
     ).get('records')
     if not items:
