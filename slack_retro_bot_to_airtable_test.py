@@ -144,6 +144,42 @@ class TestBot(unittest.TestCase):
         }
         self.assertEqual(expected_list, robo_response.json)
 
+    def test_list_good(self):
+        """ Test getting the list of all good items with POST."""
+
+        self._post_command(text='The coffee was great', slash_command='good')
+        self._post_command(text='The coffee was bad', slash_command='bad')
+        self._post_command(text='The tea was great', slash_command='good')
+        self._post_command(text='Improve the coffee', slash_command='try')
+
+        robo_response = self._post_command(text='list good', slash_command='retro')
+        expected_list = {
+            'text': 'Retrospective items:',
+            'response_type': 'in_channel',
+            'attachments': [
+                {'color': 'good', 'title': 'Good'},
+                {'color': 'good', 'text': 'The coffee was great'},
+                {'color': 'good', 'text': 'The tea was great'},
+            ],
+        }
+        self.assertEqual(expected_list, robo_response.json)
+
+    def test_list_wrong_category(self):
+        """ Test listing by an unknown category."""
+
+        self._post_command(text='The coffee was great', slash_command='good')
+        self._post_command(text='The coffee was bad', slash_command='bad')
+        self._post_command(text='The tea was great', slash_command='good')
+        self._post_command(text='Improve the coffee', slash_command='try')
+
+        robo_response = self._post_command(text='list maybe good', slash_command='retro')
+        expected_list = {
+            'text': 'Wrong category "maybe good", should be "good", "bad", "try" or empty.',
+            'response_type': 'in_channel',
+            'attachments': [],
+        }
+        self.assertEqual(expected_list, robo_response.json)
+
     # def test_help(self):
     #     """ Test getting the help for the command.
     #     """
