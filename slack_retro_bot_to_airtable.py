@@ -191,6 +191,7 @@ def handle_slack_button_click():
 
 def _get_command_action_and_params(command_text):
     """Parse the passed string for a command action and parameters."""
+
     command_components = command_text.split(' ')
     command_action = command_components[0].lower()
     command_params = ' '.join(command_components[1:])
@@ -199,16 +200,16 @@ def _get_command_action_and_params(command_text):
 
 def _add_retrospective_item_and_get_response(category, item_object, user_name):
     """Set the retrospective item for the passed parameters and return the approriate responses."""
+
     # Reject attempts to set reserved terms.
     if item_object.lower() in _ALL_CMDS:
         return "Sorry, but *{}* can't save *{}* because it's a reserved term.".format(
             _BOT_NAME, item_object)
 
-    item_object = item_object.capitalize()
+    item_object = item_object[0].upper() + item_object[1:]
     if not item_object:
         return 'Oops, you forgot to tell what was *{}*!'.format(category)
 
-    item_object = item_object[0].upper() + item_object[1:]
     category = category.lower()
 
     existing_item = _AIRTABLE_CLIENT.get(

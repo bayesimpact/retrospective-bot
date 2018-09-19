@@ -48,6 +48,7 @@ class TestBot(unittest.TestCase):
     # pylint: disable=missing-docstring
     def test_app_exists(self):
         """The app exists."""
+
         self.assertTrue(self.app)
 
     # def test_unauthorized_access(self):
@@ -67,6 +68,11 @@ class TestBot(unittest.TestCase):
     def test_set_retrospective_item_with_bad_command(self):
         return self._test_set_retrospective_item(
             'bad', 'danger', 'The coffee was bad', is_using_direct_command=True)
+
+    def test_set_retrospective_item_with_weird_case(self):
+        return self._test_set_retrospective_item(
+            'bad', 'danger', 'the coffee was bad, because of Cyrille',
+            is_using_direct_command=True, expected_text='The coffee was bad, because of Cyrille')
 
     # def test_set_retrospective_item_with_try_command(self):
     #     return self._test_set_retrospective_item(
@@ -88,8 +94,11 @@ class TestBot(unittest.TestCase):
     #     return self._test_set_retrospective_item(
     #         'try', 'warning', 'Make more tea', is_using_direct_command=False)
 
-    def _test_set_retrospective_item(self, category, color, text, is_using_direct_command=False):
+    def _test_set_retrospective_item(
+            self, category, color, text,
+            is_using_direct_command=False, expected_text=None):
         """ A retrospective item set via a POST is recorded in the database."""
+
         if is_using_direct_command:
             # '/good Bla bla'
             robo_response = self._post_command(text=text, slash_command=category)
@@ -98,13 +107,16 @@ class TestBot(unittest.TestCase):
             robo_response = self._post_command(
                 text='{} {}'.format(category, text), slash_command='retro')
 
+        if expected_text is None:
+            expected_text = text
+
         self.assertEqual(
             {
                 'text': 'New retrospective item:',
                 'response_type': 'in_channel',
                 'attachments': [
                     {'title': category.capitalize(), 'color': color},
-                    {'color': color, 'text': text},
+                    {'color': color, 'text': expected_text},
                 ],
             },
             robo_response.json,
@@ -114,7 +126,7 @@ class TestBot(unittest.TestCase):
         item = items['records'][0]['fields']
         self.assertEqual(category, item['Category'])
         self.assertEqual('retroman', item['Creator'])
-        self.assertEqual(text, item['Object'])
+        self.assertEqual(expected_text, item['Object'])
 
     def test_list(self):
         """ Test getting the list of all items with POST."""
