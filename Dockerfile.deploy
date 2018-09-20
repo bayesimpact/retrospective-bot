@@ -1,4 +1,6 @@
-FROM python:3
+# Zappa (and AWS Lambda) support the following versions of Python: ['2.7', '3.6']
+# https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html
+FROM python:3.6
 
 WORKDIR /var/task
 COPY ./requirements.txt ./requirements.txt
