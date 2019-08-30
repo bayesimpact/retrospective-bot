@@ -12,6 +12,7 @@ services:
       - ./.pycodestyle:/test/.pycodestyle:ro
     environment:
       AIRTABLE_RETRO_BASE_ID: $AIRTABLE_RETRO_BASE_ID
+      AIRTABLE_MOOD_BASE_ID: $AIRTABLE_MOOD_BASE_ID
       AIRTABLE_RETRO_API_KEY: $AIRTABLE_RETRO_API_KEY
       SLACK_RETRO_TOKEN: $SLACK_RETRO_TOKEN
   deploy:

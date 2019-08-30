@@ -17,11 +17,12 @@ app = Flask(__name__)  # pylint: disable=invalid-name
 _GOOD_CMDS = ('good',)
 _BAD_CMDS = ('bad',)
 _TRY_CMDS = ('try',)
+_MOOD_CMDS = ('mood',)
 _CATEGORY_CMDS = _GOOD_CMDS + _BAD_CMDS + _TRY_CMDS
 _NEW_CMDS = ('new',)
 _LIST_CMDS = ('list',)
 _HELP_CMDS = ('help', '?')
-_ALL_CMDS = _CATEGORY_CMDS + _NEW_CMDS + _LIST_CMDS + _HELP_CMDS
+_ALL_CMDS = _CATEGORY_CMDS + _NEW_CMDS + _LIST_CMDS + _MOOD_CMDS + _HELP_CMDS
 
 # We use an int as a first letter to sort the sections, it will be hidden later.
 _GOOD_TITLE = '1 Good'
@@ -42,12 +43,17 @@ _AIRTABLE_RETRO_BASE_ID = os.getenv('AIRTABLE_RETRO_BASE_ID')
 _AIRTABLE_RETRO_API_KEY = os.getenv('AIRTABLE_RETRO_API_KEY')
 _AIRTABLE_RETRO_ITEMS_TABLE_ID = 'Items'
 _AIRTABLE_RETRO_ITEMS_CURRENT_VIEW = 'Current View'
+_AIRTABLE_MOOD_BASE_ID = os.getenv('AIRTABLE_MOOD_BASE_ID')
+_AIRTABLE_MOOD_ITEMS_TABLE_ID = 'Moods'
+_AIRTABLE_MOOD_ITEMS_CURRENT_VIEW = 'Current View'
 
 _MISSING_ENV_VARIABLES = []
 if not _SLACK_RETRO_TOKEN:
     _MISSING_ENV_VARIABLES.append('SLACK_RETRO_TOKEN')
 if not _AIRTABLE_RETRO_BASE_ID:
     _MISSING_ENV_VARIABLES.append('AIRTABLE_RETRO_BASE_ID')
+if not _AIRTABLE_MOOD_BASE_ID:
+    _MISSING_ENV_VARIABLES.append('AIRTABLE_MOOD_BASE_ID')
 if not _AIRTABLE_RETRO_API_KEY:
     _MISSING_ENV_VARIABLES.append('AIRTABLE_RETRO_API_KEY')
 if _MISSING_ENV_VARIABLES:
@@ -55,10 +61,13 @@ if _MISSING_ENV_VARIABLES:
         'Need to setup the following AWS Lambda function env variables:\n{}'.format(
             _MISSING_ENV_VARIABLES)
     _AIRTABLE_CLIENT = None
+    _AIRTABLE_MOOD_CLIENT = None
 else:
     _STEPS_TO_FINISH_SETUP = None
     _AIRTABLE_CLIENT = airtable.Airtable(
         _AIRTABLE_RETRO_BASE_ID, _AIRTABLE_RETRO_API_KEY)
+    _AIRTABLE_MOOD_CLIENT = airtable.Airtable(
+        _AIRTABLE_MOOD_BASE_ID, _AIRTABLE_RETRO_API_KEY)
 
 
 @app.route('/')
@@ -126,6 +135,11 @@ def handle_slack_command():
         response = _get_retrospective_items_response(command_params)
         return _format_json_response(response)
 
+    # /retro mood
+    if command_action in _MOOD_CMDS:
+        response = _get_retrospective_mood_response()
+        return _format_json_response(response)
+
     # /retro new
     if command_action in _NEW_CMDS:
         item_object = command_params
@@ -144,6 +158,7 @@ def handle_slack_command():
             '*{command} try <item>* to save an item in the "try" list',
             '*{command} list* to see the different lists saved for the current sprint',
             '*{command} list <good/bad/try>* to see one of the lists saved for the current sprint',
+            '*{command} mood* to see the mood of everyone as sent to Typeform during this sprint',
             '*{command} new* to start a fresh list for the new scrum sprint',
             '*{command} help* to see this message',
         ]).format(command=slash_command)
@@ -253,6 +268,36 @@ def _get_retrospective_items_response(filter_category=None):
     response = 'Retrospective items:'
     attachments = _get_retrospective_items_attachments(items)
     return (response, attachments)
+
+
+def _get_retrospective_mood_response():
+    """Get all the retrospective moods for the current sprint."""
+
+    items = _AIRTABLE_MOOD_CLIENT.get(
+        _AIRTABLE_MOOD_ITEMS_TABLE_ID,
+        view=_AIRTABLE_MOOD_ITEMS_CURRENT_VIEW
+    ).get('records')
+    if not items:
+        return 'No mood items for this week yet.'
+
+    response = ':mag: Dear team, here is the weekly check in of this week :mag_right:\n\n'
+    for item in items:
+        fields = item['fields']
+        name = fields.get('Name')
+        feelings = '\n\t\t'.join(fields.get('How are you feeling at Bayes', '').split(',\n'))
+        feeling_free_text = fields.get('Feeling at bayes free text', '')
+        if feeling_free_text:
+            feeling_free_text = '\n\t\t' + feeling_free_text
+        work_status = '\n\t\t'.join(fields.get('How is your work going', '').split(',\n'))
+        work_status_free_text = fields.get('How is your work going free text', '')
+        if work_status_free_text:
+            work_status_free_text = '\n\t\t' + work_status_free_text
+        response += f'''*{name}*
+\tFeeling:
+\t\t{feelings}{feeling_free_text}
+\tWork at Bayes:
+\t\t{work_status}{work_status_free_text}\n\n'''
+    return response
 
 
 def _get_retrospective_items_attachments(retrospective_items):
