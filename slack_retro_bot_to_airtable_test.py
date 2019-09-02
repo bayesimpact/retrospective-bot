@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Test /retro commands."""
 
+import textwrap
 import unittest
 from os import environ
 
@@ -24,14 +25,21 @@ class TestBot(unittest.TestCase):
 
         airtablemock.clear()
         self.airtable_client = airtablemock.Airtable('retro-base-id')
+        self.airtable_mood_client = airtablemock.Airtable('mood-base-id')
         patcher = mock.patch(
             slack_retro_bot_to_airtable.__name__ + '._AIRTABLE_CLIENT',
             self.airtable_client)
+        patcher.start()
+        patcher = mock.patch(
+            slack_retro_bot_to_airtable.__name__ + '._AIRTABLE_MOOD_CLIENT',
+            self.airtable_mood_client)
         patcher.start()
         self.addCleanup(patcher.stop)
 
         self.airtable_client.create('Items', {'sprint': 'old'})
         self.airtable_client.create_view('Items', 'Current View', 'sprint != "old"')
+        self.airtable_mood_client.create('Moods', {'sprint': 'old'})
+        self.airtable_mood_client.create_view('Moods', 'Current View', 'sprint != "old"')
 
     def _post_command(self, text, slash_command='/retro'):
 
@@ -196,6 +204,36 @@ class TestBot(unittest.TestCase):
             'attachments': [],
         }
         self.assertEqual(expected_list, robo_response.json)
+
+    def test_mood(self):
+        """Test listing the mood for everyone."""
+
+        self.airtable_mood_client.create('Moods', {
+            'Name': 'Cyrille',
+            'How are you feeling at Bayes': "I don't know",
+            'Feeling at bayes free text': 'NTD',
+            'How is your work going': "I'm doing a good job,\nI'm on fire",
+        })
+        robo_response = self._post_command(text='mood', slash_command='retro')
+        expected_response = textwrap.dedent('''\
+            :mag: Dear team, here is the weekly check in of this week :mag_right:
+
+            *Cyrille*
+            \tFeeling:
+            \t\tI don't know
+            \t\tNTD
+            \tWork at Bayes:
+            \t\tI'm doing a good job
+            \t\tI'm on fire
+
+            ''')
+        self.assertEqual(
+            {
+                'attachments': [],
+                'response_type': 'in_channel',
+                'text': expected_response,
+            },
+            robo_response.json)
 
     # def test_help(self):
     #     """ Test getting the help for the command.
