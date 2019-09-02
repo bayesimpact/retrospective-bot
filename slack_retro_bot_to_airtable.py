@@ -47,6 +47,32 @@ _AIRTABLE_RETRO_ITEMS_CURRENT_VIEW = 'Current View'
 _AIRTABLE_MOOD_ITEMS_TABLE_ID = 'Moods'
 _AIRTABLE_MOOD_ITEMS_CURRENT_VIEW = 'Current View'
 
+_MOOD_EMOJIS = {
+    "I'm super happy and energized": ':star-struck:',
+    "I'm happy": ':hugging_face:',
+    "I'm doing well": ':relaxed:',
+    "I'm ok": ':no_mouth:',
+    "I don't know": ':face_with_rolling_eyes:',
+    "I'm bit unhappy": ':confused:',
+    "I'm annoyed": ':triumph:',
+    "I'm not doing well": ':white_frowning_face:',
+    "I'm feeling super down": ':cry:',
+    "I'm worried": ':fearful:',
+    "I'm super upset": ':face_with_symbols_on_mouth:',
+    "I'm tired": ':persevere:',
+    'I feel inspired': ':star-struck:',
+    "I'm feeling very productive": ':muscle:',
+    'I feel excited': ':stuck_out_tongue:',
+    "I'm doing a good job": ':relaxed:',
+    'I feel lost': ':thinking_face:',
+    "I'm bored": ':sleeping:',
+    "I'm blocked": ':hand:',
+    "I'm quite productive": ':nerd_face:',
+    'There is too much on my plate': ':exploding_head:',
+    "I don't think I am working on the right thing": ':face_with_monocle:',
+    "I don't feel focused": ':zany_face:',
+}
+
 _MISSING_ENV_VARIABLES = []
 if not _SLACK_RETRO_TOKEN:
     _MISSING_ENV_VARIABLES.append('SLACK_RETRO_TOKEN')
@@ -279,26 +305,43 @@ def _get_retrospective_mood_response():
     for item in items:
         fields = item['fields']
         name = fields.get('Name')
-        feelings = '\n\t\t'.join(fields.get('How are you feeling at Bayes', '').split(',\n'))
+        feelings = '\n'.join(
+            _with_emoji_prefix(feeling)
+            for feeling in fields.get('How are you feeling at Bayes', '').split(',\n'))
+        if not feelings:
+            feelings = '\t_No feeling emojis selected_'
         feeling_free_text = fields.get('Feeling at bayes free text', '')
         if feeling_free_text:
-            feeling_free_text = '\n\t\t' + feeling_free_text
-        work_status = '\n\t\t'.join(fields.get('How is your work going', '').split(',\n'))
+            feeling_free_text = '\n> ' + feeling_free_text
+        work_status = '\n• '.join(
+            _with_emoji_prefix(status)
+            for status in fields.get('How is your work going', '').split(',\n'))
+        if not work_status:
+            work_status = '\t_No work status emojis selected_'
         work_status_free_text = fields.get('How is your work going free text', '')
         if work_status_free_text:
-            work_status_free_text = '\n\t\t' + work_status_free_text
+            work_status_free_text = '\n> ' + work_status_free_text
         response += textwrap.dedent('''\
         *{name}*
-        \tFeeling:
-        \t\t{feelings}{feeling_free_text}
-        \tWork at Bayes:
-        \t\t{work_status}{work_status_free_text}
+        • _Feeling_
+        {feelings}{feeling_free_text}
+        • _Work at Bayes_
+        {work_status}{work_status_free_text}
 
         ''').format(
             name=name,
             feelings=feelings, feeling_free_text=feeling_free_text,
             work_status=work_status, work_status_free_text=work_status_free_text)
     return response
+
+
+def _with_emoji_prefix(sentence):
+    """Prepends with an emoji if one is found."""
+    try:
+        emoji = _MOOD_EMOJIS[sentence]
+    except KeyError:
+        return sentence
+    return f'{emoji} {sentence}'
 
 
 def _get_retrospective_items_attachments(retrospective_items):
