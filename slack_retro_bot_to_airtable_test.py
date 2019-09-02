@@ -206,19 +206,18 @@ class TestBot(unittest.TestCase):
             'Name': 'Cyrille',
             'How are you feeling at Bayes': "I don't know",
             'Feeling at bayes free text': 'NTD',
-            'How is your work going': "I'm doing a good job,\nI'm on fire",
+            'How is your work going': "I'm doing a good job",
         })
         robo_response = self._post_command(text='mood', slash_command='retro')
         expected_response = textwrap.dedent('''\
             :mag: Dear team, here is the weekly check in of this week :mag_right:
 
             *Cyrille*
-            \tFeeling:
-            \t\tI don't know
-            \t\tNTD
-            \tWork at Bayes:
-            \t\tI'm doing a good job
-            \t\tI'm on fire
+            • _Feeling_
+            :face_with_rolling_eyes: I don't know
+            > NTD
+            • _Work at Bayes_
+            :relaxed: I'm doing a good job
 
             ''')
         self.assertEqual(
