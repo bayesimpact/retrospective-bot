@@ -7,6 +7,6 @@ COPY ./requirements.txt ./requirements.txt
 COPY ./entrypoint.deploy.sh ./entrypoint.sh
 
 RUN pip install --upgrade pip setuptools pipenv
-RUN pipenv --three install -r ./requirements.txt
+RUN pipenv --python 3.6 install -r ./requirements.txt
 
 ENTRYPOINT ["./entrypoint.sh"]
