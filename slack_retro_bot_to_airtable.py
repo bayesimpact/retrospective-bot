@@ -44,7 +44,6 @@ _AIRTABLE_RETRO_BASE_ID = os.getenv('AIRTABLE_RETRO_BASE_ID')
 _AIRTABLE_RETRO_API_KEY = os.getenv('AIRTABLE_RETRO_API_KEY')
 _AIRTABLE_RETRO_ITEMS_TABLE_ID = 'Items'
 _AIRTABLE_RETRO_ITEMS_CURRENT_VIEW = 'Current View'
-_AIRTABLE_MOOD_BASE_ID = os.getenv('AIRTABLE_MOOD_BASE_ID')
 _AIRTABLE_MOOD_ITEMS_TABLE_ID = 'Moods'
 _AIRTABLE_MOOD_ITEMS_CURRENT_VIEW = 'Current View'
 
@@ -53,8 +52,6 @@ if not _SLACK_RETRO_TOKEN:
     _MISSING_ENV_VARIABLES.append('SLACK_RETRO_TOKEN')
 if not _AIRTABLE_RETRO_BASE_ID:
     _MISSING_ENV_VARIABLES.append('AIRTABLE_RETRO_BASE_ID')
-if not _AIRTABLE_MOOD_BASE_ID:
-    _MISSING_ENV_VARIABLES.append('AIRTABLE_MOOD_BASE_ID')
 if not _AIRTABLE_RETRO_API_KEY:
     _MISSING_ENV_VARIABLES.append('AIRTABLE_RETRO_API_KEY')
 if _MISSING_ENV_VARIABLES:
@@ -62,13 +59,10 @@ if _MISSING_ENV_VARIABLES:
         'Need to setup the following AWS Lambda function env variables:\n{}'.format(
             _MISSING_ENV_VARIABLES)
     _AIRTABLE_CLIENT = None
-    _AIRTABLE_MOOD_CLIENT = None
 else:
     _STEPS_TO_FINISH_SETUP = None
     _AIRTABLE_CLIENT = airtable.Airtable(
         _AIRTABLE_RETRO_BASE_ID, _AIRTABLE_RETRO_API_KEY)
-    _AIRTABLE_MOOD_CLIENT = airtable.Airtable(
-        _AIRTABLE_MOOD_BASE_ID, _AIRTABLE_RETRO_API_KEY)
 
 
 @app.route('/')
@@ -274,7 +268,7 @@ def _get_retrospective_items_response(filter_category=None):
 def _get_retrospective_mood_response():
     """Get all the retrospective moods for the current sprint."""
 
-    items = _AIRTABLE_MOOD_CLIENT.get(
+    items = _AIRTABLE_CLIENT.get(
         _AIRTABLE_MOOD_ITEMS_TABLE_ID,
         view=_AIRTABLE_MOOD_ITEMS_CURRENT_VIEW
     ).get('records')

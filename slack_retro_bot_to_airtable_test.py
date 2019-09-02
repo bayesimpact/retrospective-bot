@@ -25,21 +25,15 @@ class TestBot(unittest.TestCase):
 
         airtablemock.clear()
         self.airtable_client = airtablemock.Airtable('retro-base-id')
-        self.airtable_mood_client = airtablemock.Airtable('mood-base-id')
         patcher = mock.patch(
             slack_retro_bot_to_airtable.__name__ + '._AIRTABLE_CLIENT',
             self.airtable_client)
         patcher.start()
-        patcher = mock.patch(
-            slack_retro_bot_to_airtable.__name__ + '._AIRTABLE_MOOD_CLIENT',
-            self.airtable_mood_client)
-        patcher.start()
-        self.addCleanup(patcher.stop)
 
         self.airtable_client.create('Items', {'sprint': 'old'})
         self.airtable_client.create_view('Items', 'Current View', 'sprint != "old"')
-        self.airtable_mood_client.create('Moods', {'sprint': 'old'})
-        self.airtable_mood_client.create_view('Moods', 'Current View', 'sprint != "old"')
+        self.airtable_client.create('Moods', {'sprint': 'old'})
+        self.airtable_client.create_view('Moods', 'Current View', 'sprint != "old"')
 
     def _post_command(self, text, slash_command='/retro'):
 
@@ -208,7 +202,7 @@ class TestBot(unittest.TestCase):
     def test_mood(self):
         """Test listing the mood for everyone."""
 
-        self.airtable_mood_client.create('Moods', {
+        self.airtable_client.create('Moods', {
             'Name': 'Cyrille',
             'How are you feeling at Bayes': "I don't know",
             'Feeling at bayes free text': 'NTD',
