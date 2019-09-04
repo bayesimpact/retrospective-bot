@@ -2,6 +2,4 @@
 
 set -e
 
-SHELL="/bin/bash" pipenv shell
-
-$@
+SHELL="/bin/bash" pipenv run "$@"
