@@ -17,6 +17,7 @@ services:
       SLACK_RETRO_TOKEN: $SLACK_RETRO_TOKEN
   deploy:
     volumes:
+      - ./entrypoint.deploy.sh:/var/task/entrypoint.sh:ro
       - ./slack_retro_bot_to_airtable.py:/var/task/slack_retro_bot_to_airtable.py:ro
       - ./zappa_settings.json:/var/task/zappa_settings.json:ro
     environment:
