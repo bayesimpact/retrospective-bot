@@ -10,3 +10,4 @@ RUN pip install --upgrade pip setuptools pipenv
 RUN pipenv --python 3.6 install -r ./requirements.txt
 
 ENTRYPOINT ["./entrypoint.sh"]
+CMD zappa package dev -o ./dist/slack_retro_bot_lambda.zip
