@@ -204,7 +204,7 @@ class TestBot(unittest.TestCase):
 
         self.airtable_client.create('Moods', {
             'Name': 'Cyrille',
-            'How are you feeling at Bayes': "I don't know",
+            'How are you feeling at Bayes': "I don't know, \nI'm ok",
             'Feeling at bayes free text': 'NTD',
             'How is your work going': "I'm doing a good job",
         })
@@ -215,6 +215,7 @@ class TestBot(unittest.TestCase):
             *Cyrille*
             • _Feeling_
             :face_with_rolling_eyes: I don't know
+            :no_mouth: I'm ok
             > NTD
             • _Work at Bayes_
             :relaxed: I'm doing a good job
