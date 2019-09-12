@@ -52,6 +52,7 @@ _MOOD_EMOJIS = {
     "I'm happy": ':hugging_face:',
     "I'm doing well": ':relaxed:',
     "I'm ok": ':no_mouth:',
+    "I'm ok (not much to say)": ':no_mouth:',
     "I don't know": ':face_with_rolling_eyes:',
     "I'm bit unhappy": ':confused:',
     "I'm annoyed": ':triumph:',
@@ -67,7 +68,7 @@ _MOOD_EMOJIS = {
     'I feel lost': ':thinking_face:',
     "I'm bored": ':sleeping:',
     "I'm blocked": ':hand:',
-    "I'm quite productive": ':nerd_face:',
+    'I am quite productive': ':nerd_face:',
     'There is too much on my plate': ':exploding_head:',
     "I don't think I am working on the right thing": ':face_with_monocle:',
     "I don't feel focused": ':zany_face:',
@@ -307,7 +308,7 @@ def _get_retrospective_mood_response():
         name = fields.get('Name')
         feelings = '\n'.join(
             _with_emoji_prefix(feeling)
-            for feeling in fields.get('How are you feeling at Bayes', '').split(',\n'))
+            for feeling in fields.get('How are you feeling at Bayes', '').split(', \n'))
         if not feelings:
             feelings = '\t_No feeling emojis selected_'
         feeling_free_text = fields.get('Feeling at bayes free text', '')
@@ -315,7 +316,7 @@ def _get_retrospective_mood_response():
             feeling_free_text = '\n> ' + feeling_free_text
         work_status = '\n• '.join(
             _with_emoji_prefix(status)
-            for status in fields.get('How is your work going', '').split(',\n'))
+            for status in fields.get('How is your work going', '').split(', \n'))
         if not work_status:
             work_status = '\t_No work status emojis selected_'
         work_status_free_text = fields.get('How is your work going free text', '')
