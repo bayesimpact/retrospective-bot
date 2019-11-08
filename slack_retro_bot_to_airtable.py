@@ -314,7 +314,7 @@ def _get_retrospective_mood_response():
         feeling_free_text = fields.get('Feeling at bayes free text', '')
         if feeling_free_text:
             feeling_free_text = '\n> ' + feeling_free_text
-        work_status = '\n• '.join(
+        work_status = '\n '.join(
             _with_emoji_prefix(status)
             for status in fields.get('How is your work going', '').split(', \n'))
         if not work_status:
@@ -341,6 +341,7 @@ def _with_emoji_prefix(sentence):
     try:
         emoji = _MOOD_EMOJIS[sentence]
     except KeyError:
+        logging.warning(f'Missing an emoji for sentence "{sentence}".')
         return sentence
     return f'{emoji} {sentence}'
 
