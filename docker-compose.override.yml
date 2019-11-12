@@ -20,7 +20,7 @@ services:
       - ./entrypoint.deploy.sh:/var/task/entrypoint.sh:ro
       - ./slack_retro_bot_to_airtable.py:/var/task/slack_retro_bot_to_airtable.py:ro
       - ./zappa_settings.json:/var/task/zappa_settings.json:ro
-      - ./dist:/var/task/dist:rw
+      - $HOME/.aws/credentials:/root/.aws/credentials:ro
     environment:
       AWS_SECRET_ACCESS_KEY:
       AWS_ACCESS_KEY_ID:
