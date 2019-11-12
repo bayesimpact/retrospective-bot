@@ -1,6 +1,7 @@
 """Integration to send Slack messages when new code reviews are sent in Reviewable."""
 
 import json
+import logging
 import os
 import re
 from datetime import datetime
@@ -54,7 +55,7 @@ _MOOD_EMOJIS = {
     "I'm ok": ':no_mouth:',
     "I'm ok (not much to say)": ':no_mouth:',
     "I don't know": ':face_with_rolling_eyes:',
-    "I'm bit unhappy": ':confused:',
+    "I'm a bit unhappy": ':confused:',
     "I'm annoyed": ':triumph:',
     "I'm not doing well": ':white_frowning_face:',
     "I'm feeling super down": ':cry:',
@@ -314,7 +315,7 @@ def _get_retrospective_mood_response():
         feeling_free_text = fields.get('Feeling at bayes free text', '')
         if feeling_free_text:
             feeling_free_text = '\n> ' + feeling_free_text
-        work_status = '\n• '.join(
+        work_status = '\n'.join(
             _with_emoji_prefix(status)
             for status in fields.get('How is your work going', '').split(', \n'))
         if not work_status:
@@ -341,6 +342,7 @@ def _with_emoji_prefix(sentence):
     try:
         emoji = _MOOD_EMOJIS[sentence]
     except KeyError:
+        logging.warning('Missing an emoji for sentence "%s".', sentence)
         return sentence
     return f'{emoji} {sentence}'
 
