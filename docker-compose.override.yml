@@ -22,6 +22,4 @@ services:
       - ./zappa_settings.json:/var/task/zappa_settings.json:ro
       - $HOME/.aws/credentials:/root/.aws/credentials:ro
     environment:
-      AWS_SECRET_ACCESS_KEY:
-      AWS_ACCESS_KEY_ID:
       AWS_DEFAULT_REGION:

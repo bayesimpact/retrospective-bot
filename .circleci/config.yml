@@ -14,6 +14,20 @@ jobs:
             rm docker-compose.override.yml
             docker-compose build --pull test
             docker-compose run test
+  deploy:
+    docker:
+      - image: bayesimpact/circleci
+    steps:
+      - checkout
+      - setup_remote_docker:
+          # Allows to use previous cached version of the built Docker services.
+          reusable: true
+      - run:
+          name: Run tests
+          command: |
+            rm docker-compose.override.yml
+            docker-compose build --pull deploy
+            docker-compose run deploy
 
 workflows:
   version: 2
@@ -21,6 +35,14 @@ workflows:
   build-test:
     jobs:
       - build-test
+      - deploy:
+          requires:
+            - build-test
+          filters:
+            branches:
+              only:
+                - master
+                - /.*ci-deploy/
 
 experimental:
   notify:

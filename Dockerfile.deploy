@@ -3,7 +3,7 @@
 FROM python:3.6
 
 WORKDIR /var/task
-COPY ./requirements.txt ./requirements.txt
+COPY ./requirements.txt ./slack_retro_bot_to_airtable.py ./zappa_settings.json ./
 COPY ./entrypoint.deploy.sh ./entrypoint.sh
 
 RUN pip install --upgrade pip setuptools pipenv

@@ -12,6 +12,9 @@ services:
       context: .
       dockerfile: Dockerfile.deploy
     tty: true
+    environment:
+      AWS_SECRET_ACCESS_KEY:
+      AWS_ACCESS_KEY_ID:
 networks:
   none:
     external:
