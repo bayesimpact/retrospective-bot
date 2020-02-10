@@ -150,18 +150,40 @@ class TestBot(unittest.TestCase):
 
         # Check list is filled later
         robo_response = self._post_command(text='list', slash_command='retro')
-        expected_list = {
-            'text': 'Retrospective items:',
-            'response_type': 'in_channel',
-            'attachments': [
-                {'color': 'good', 'title': 'Good'},
-                {'color': 'good', 'text': 'The coffee was great'},
-                {'color': 'good', 'text': 'The tea was great'},
-                {'color': 'danger', 'title': 'Bad'},
-                {'color': 'danger', 'text': 'The coffee was bad'},
-            ],
+        attachments = robo_response.json.get('attachments', [])
+        self.assertEqual(7, len(attachments), msg=attachments)
+        expected_list = [
+            {'color': 'good', 'title': 'Good'},
+            {'color': 'good', 'text': 'The coffee was great'},
+            {'color': 'good', 'text': 'The tea was great'},
+            # Here should be the button to mark good as reviewed.
+            {'color': 'danger', 'title': 'Bad'},
+            {'color': 'danger', 'text': 'The coffee was bad'},
+            # Here should be the button to mark bad as reviewed.
+        ]
+        good_button = attachments.pop(3)
+        bad_button = attachments.pop(5)
+        self.assertEqual(expected_list, attachments)
+
+        good_item_ids = good_button.pop('callback_id', '')
+        self.assertEqual(2, len(good_item_ids.split(',')), msg=good_item_ids)
+        bad_item_ids = bad_button.pop('callback_id', '')
+        self.assertEqual(1, len(bad_item_ids.split(',')), msg=bad_item_ids)
+
+        expected_button = {
+            'attachment_type': 'default',
+            'actions': [{
+                'name': 'new',
+                'type': 'button',
+            }],
         }
-        self.assertEqual(expected_list, robo_response.json)
+
+        expected_button['actions'][0]['text'] = '✅ Mark good items as read'
+        expected_button['actions'][0]['value'] = 'Good'
+        self.assertEqual(expected_button, good_button)
+        expected_button['actions'][0]['text'] = '✅ Mark bad items as read'
+        expected_button['actions'][0]['value'] = 'Bad'
+        self.assertEqual(expected_button, bad_button)
 
     def test_list_good(self):
         """ Test getting the list of all good items with POST."""
@@ -172,6 +194,7 @@ class TestBot(unittest.TestCase):
         self._post_command(text='Improve the coffee', slash_command='try')
 
         robo_response = self._post_command(text='list good', slash_command='retro')
+        good_button = robo_response.json['attachments'].pop(-1)
         expected_list = {
             'text': 'Retrospective items:',
             'response_type': 'in_channel',
@@ -182,6 +205,20 @@ class TestBot(unittest.TestCase):
             ],
         }
         self.assertEqual(expected_list, robo_response.json)
+
+        callback_id = good_button.pop('callback_id')
+        self.assertEqual(2, len(callback_id.split(',')), msg=callback_id)
+        expected_button = {
+            'attachment_type': 'default',
+            'actions': [{
+                'name': 'new',
+                'text': '✅ Mark good items as read',
+                'type': 'button',
+                'value': 'Good',
+            }],
+        }
+
+        self.assertEqual(expected_button, good_button)
 
     def test_list_wrong_category(self):
         """ Test listing by an unknown category."""

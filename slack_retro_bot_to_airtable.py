@@ -201,11 +201,8 @@ def handle_slack_button_click():
     if slack_button_click['token'] != _SLACK_RETRO_TOKEN:
         abort(401)
 
-    # Verify that the request is authorized.
-    # if slack_button_click['token'] != _SLACK_RETRO_TOKEN:
-    #     abort(401)
-
     item_id = slack_button_click['callback_id']
+    response_url = slack_button_click['response_url']
     action = slack_button_click['actions'][0]
 
     new_fields = {}
@@ -217,12 +214,20 @@ def handle_slack_button_click():
     if new_fields:
         item = _AIRTABLE_CLIENT.update(_AIRTABLE_RETRO_ITEMS_TABLE_ID, item_id, new_fields)
 
-    # Update attachment for the item.
     message = slack_button_click['original_message']
-    for i, attachment in enumerate(message['attachments']):
-        if attachment.get('callback_id') == item_id:
-            message['attachments'][i] = _get_retrospective_item_attachment(
-                item, show_emoji_and_no_actions=True)
+    attachment = next(
+        attachment for attachment in message['attachments']
+        if str(attachment['id']) == slack_button_click['attachment_id'])
+
+    if action['name'] == 'new':
+        item_ids = item_id.split(',')
+        attachment['text'] = _mark_retrospective_items_as_reviewed(
+            response_url, item_ids, action['value'])
+        attachment['actions'] = []
+    else:
+        # Update attachment for the item.
+        attachment.update(
+            _get_retrospective_item_attachment(item, show_emoji_and_no_actions=True))
 
     return Response(json.dumps(message), status=200, mimetype='application/json')
 
@@ -269,7 +274,7 @@ def _add_retrospective_item_and_get_response(category, item_object, user_name):
         return 'Sorry, but *{}* was unable to save the retrospective item.'.format(_BOT_NAME)
 
     response = 'New retrospective item:'
-    attachments = _get_retrospective_items_attachments([item_airtable_record])
+    attachments = _get_retrospective_items_attachments([item_airtable_record], show_review=False)
     return (response, attachments)
 
 
@@ -289,7 +294,7 @@ def _get_retrospective_items_response(filter_category=None):
         return 'No retrospective items yet.'
 
     response = 'Retrospective items:'
-    attachments = _get_retrospective_items_attachments(items)
+    attachments = _get_retrospective_items_attachments(items, show_review=True)
     return (response, attachments)
 
 
@@ -347,19 +352,40 @@ def _with_emoji_prefix(sentence):
     return f'{emoji} {sentence}'
 
 
-def _get_retrospective_items_attachments(retrospective_items):
+def _get_retrospective_items_attachments(retrospective_items, show_review):
     """Return Slack message attachements to show the given retrospective items."""
 
     retrospective_items = sorted(retrospective_items, key=_get_category_title)
     items_by_category = groupby(retrospective_items, key=_get_category_title)
     attachments = []
     for category_title, items_in_category in items_by_category:
+        # Remove starting number and space in the title.
+        title = category_title[2:]
+        callback_ids = []
         attachments += [{
-            # Remove starting number and space in the title.
-            'title': category_title[2:],
+            'title': title,
             'color': _COLORS_BY_TITLE[category_title],
         }]
-        attachments += [_get_retrospective_item_attachment(item) for item in items_in_category]
+        if category_title == _TRY_TO_COMPLETE_TITLE:
+            title = 'Completed Try'
+        for item in items_in_category:
+            attachments.append(_get_retrospective_item_attachment(item))
+            if category_title != _TRY_TO_COMPLETE_TITLE or item['fields'].get('Completed At'):
+                callback_ids.append(item['id'])
+        if not show_review or not callback_ids:
+            continue
+
+        review_actions = [{
+            'name': 'new',
+            'text': f'✅ Mark {title.lower()} items as read',
+            'type': 'button',
+            'value': title,
+        }]
+        attachments.append({
+            'callback_id': ','.join(callback_ids),
+            'attachment_type': 'default',
+            'actions': review_actions,
+        })
     return attachments
 
 
@@ -427,44 +453,52 @@ def _get_retrospective_item_attachment(item, show_emoji_and_no_actions=False):
     return attachment
 
 
-def _mark_retrospective_items_as_reviewed(response_url):
+def _mark_retrospective_items_as_reviewed(response_url, item_ids=None, name=None):
     """Start a new sprint with a new empty retrospective item list."""
 
-    _async_mark_retrospective_items_as_reviewed(response_url)
-    return 'Marking all current retrospective items as reviewed...'
+    _async_mark_retrospective_items_as_reviewed(response_url, item_ids, name)
+    marked = 'these' if name else 'all current'
+    return f'Marking {marked} retrospective items as reviewed...'
 
 
 @task
-def _async_mark_retrospective_items_as_reviewed(response_url):
-    items = _AIRTABLE_CLIENT.get(
-        _AIRTABLE_RETRO_ITEMS_TABLE_ID,
-        view=_AIRTABLE_RETRO_ITEMS_CURRENT_VIEW,
-    ).get('records')
-    if not items:
+def _async_mark_retrospective_items_as_reviewed(response_url, item_ids, name):
+    if item_ids is None:
+        item_ids = [item['id'] for item in _AIRTABLE_CLIENT.get(
+            _AIRTABLE_RETRO_ITEMS_TABLE_ID,
+            view=_AIRTABLE_RETRO_ITEMS_CURRENT_VIEW,
+        ).get('records')]
+    if not item_ids:
         return requests.post(response_url, json={
             'response_type': 'in_channel',
             'text': 'All retrospective were already marked as reviewed!',
         })
+    is_for_try = not name or name == 'Try'
+    if not name:
+        name = 'All retrospective'
 
     new_fields = {
         'Reviewed At': _now(),
     }
 
-    for item in items:
+    for item_id in item_ids:
         _AIRTABLE_CLIENT.update(
-            _AIRTABLE_RETRO_ITEMS_TABLE_ID, item.get('id'), new_fields)
+            _AIRTABLE_RETRO_ITEMS_TABLE_ID, item_id, new_fields)
 
-    remaining_items = _AIRTABLE_CLIENT.get(
-        _AIRTABLE_RETRO_ITEMS_TABLE_ID,
-        view=_AIRTABLE_RETRO_ITEMS_CURRENT_VIEW,
-    ).get('records')
-    attachments = _get_retrospective_items_attachments(remaining_items)
+    if is_for_try:
+        remaining_items = _AIRTABLE_CLIENT.get(
+            _AIRTABLE_RETRO_ITEMS_TABLE_ID,
+            view=_AIRTABLE_RETRO_ITEMS_CURRENT_VIEW,
+        ).get('records')
+        attachments = _get_retrospective_items_attachments(remaining_items, show_review=True)
+    else:
+        attachments = []
 
     return requests.post(response_url, json={
         'response_type': 'in_channel',
-        'text':
-        'All retrospective items marked as reviewed!'
-        "\nHere are the remaining 'try' items to complete:" if attachments else '',
+        'text': (
+            f'{name} items marked as reviewed!'
+            "\nHere are the remaining 'try' items to complete:" if attachments else ''),
         'attachments': attachments,
     })
 
