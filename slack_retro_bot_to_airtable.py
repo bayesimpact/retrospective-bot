@@ -41,6 +41,7 @@ _COLORS_BY_TITLE = {
 _BOT_NAME = 'Retrospective Bot'
 
 _SLACK_RETRO_TOKEN = os.getenv('SLACK_RETRO_TOKEN')
+_SLACK_WEBHOOK_URL = os.getenv('SLACK_WEBHOOK_URL')
 _AIRTABLE_RETRO_BASE_ID = os.getenv('AIRTABLE_RETRO_BASE_ID')
 _AIRTABLE_RETRO_API_KEY = os.getenv('AIRTABLE_RETRO_API_KEY')
 _AIRTABLE_RETRO_ITEMS_TABLE_ID = 'Items'
@@ -82,6 +83,8 @@ if not _AIRTABLE_RETRO_BASE_ID:
     _MISSING_ENV_VARIABLES.append('AIRTABLE_RETRO_BASE_ID')
 if not _AIRTABLE_RETRO_API_KEY:
     _MISSING_ENV_VARIABLES.append('AIRTABLE_RETRO_API_KEY')
+if not _SLACK_WEBHOOK_URL:
+    _MISSING_ENV_VARIABLES.append('SLACK_WEBHOOK_URL')
 if _MISSING_ENV_VARIABLES:
     _STEPS_TO_FINISH_SETUP = \
         'Need to setup the following AWS Lambda function env variables:\n{}'.format(
@@ -501,6 +504,13 @@ def _async_mark_retrospective_items_as_reviewed(response_url, item_ids, name):
             "\nHere are the remaining 'try' items to complete:" if attachments else ''),
         'attachments': attachments,
     })
+
+
+def send_retro_mood(*unused_args, **unused_kwargs):
+    """Run the retro mood command, to be used in a scheduled task."""
+
+    response = requests.post(_SLACK_WEBHOOK_URL, json={'text': _get_retrospective_mood_response()})
+    response.raise_for_status()
 
 
 def _format_json_response(response, in_channel=True):
