@@ -2,6 +2,10 @@
     "dev": {
         "app_function": "slack_retro_bot_to_airtable.app",
         "aws_region": "us-east-1",
+        "events": [{
+            "function": "slack_retro_bot_to_airtable.send_retro_mood",
+            "expression": "cron(30 13 ? * FRI *)"
+        }],
         "lambda_description": "Handler for /retro command in Slack that saves Good/Bad/Try items in Airtable.",
         "project_name": "slack-retro-bot-to-airtable",
         "s3_bucket": "lambda-slack-retro-bot-to-airtable-repo",
